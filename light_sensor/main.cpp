@@ -7,7 +7,7 @@ const int adc_address = 0x48; // ADS1115 default address
 const int config_register = 0x01;
 const int conversion_register = 0x00;
 
-int channel_config = 0xC183; // Configs for channels 0 to 3
+int channel_config = 0xC583; // Configs for channels 0 to 3
 
 void init_adc(int fd, int config) {
     int msb = (config >> 8) & 0xFF;
