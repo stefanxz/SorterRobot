@@ -1,18 +1,17 @@
-//
-// Created by Stefan on 07.05.2024.
-//
-
-
-#include <iostream>
 #include "DisplayController.h"
 
-using namespace std;
+int main() {
+    try {
+        DisplayController displayController(0x27);  // Change to your actual I2C address
+        displayController.displayString("Hello, Madalina!");
+        delay(2000);
+        displayController.clear();
+        displayController.displayString("Raspberry Pi 3B");
+        delay(2000);
+    } catch (const std::exception &e) {
+        std::cerr << "An error occurred: " << e.what() << '\n';
+        return -1;
+    }
 
-int main()
-{
-    DisplayController display(0x27);
-    display.display_setup();
-    display.display_string("BBL Drizzy versus Kendrick Lebar");
-    display.display_clear();
     return 0;
 }

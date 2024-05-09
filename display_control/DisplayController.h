@@ -1,60 +1,68 @@
-//
-// Created by Stefan on 07.05.2024.
-//
-
-
-#ifndef INC_2IO75_DISPLAYCONTROLLER_H
-#define INC_2IO75_DISPLAYCONTROLLER_H
+#ifndef DISPLAYCONTROLLER_H
+#define DISPLAYCONTROLLER_H
 
 #include <iostream>
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
-#include <unistd.h>
 
 class DisplayController {
 private:
-private:
-    int fd;
-    int address;
+    int fd; // File descriptor for the I2C device
 
-    void display_send_data(char data) { // send data via the i2c bus by using the upper and lower nibble of data
-        char data_u, data_l;
-        data_u = data & 0xf0;
-        data_l = (data << 4) & 0xf0;
-        wiringPiI2CWrite(fd, data_u | 0x0D);
-        wiringPiI2CWrite(fd, data_u | 0x09);
-        wiringPiI2CWrite(fd, data_l | 0x0D);
-        wiringPiI2CWrite(fd, data_l | 0x09);
+    void sendCmd(char cmd) {
+        char data_u = cmd & 0xF0;         // Upper nibble
+        char data_l = (cmd << 4) & 0xF0;  // Lower nibble
+
+        wiringPiI2CWrite(fd, data_u | 0x0C);  // EN=1, RS=0
+        wiringPiI2CWrite(fd, data_u | 0x08);  // EN=0, RS=0
+        wiringPiI2CWrite(fd, data_l | 0x0C);  // EN=1, RS=0
+        wiringPiI2CWrite(fd, data_l | 0x08);  // EN=0, RS=0
+
+        delay(2);  // Wait for the command to execute
+    }
+
+    void sendData(char data) {
+        char data_u = data & 0xF0;         // Upper nibble
+        char data_l = (data << 4) & 0xF0;  // Lower nibble
+
+        wiringPiI2CWrite(fd, data_u | 0x0D);  // EN=1, RS=1
+        wiringPiI2CWrite(fd, data_u | 0x09);  // EN=0, RS=1
+        wiringPiI2CWrite(fd, data_l | 0x0D);  // EN=1, RS=1
+        wiringPiI2CWrite(fd, data_l | 0x09);  // EN=0, RS=1
+
+        delay(2);  // Wait for the data to be processed
     }
 
 public:
-    DisplayController(int address)
-            : address(address) {} // Class constructor
+    DisplayController(int i2cAddress) {
+        wiringPiSetup();  // Initialize wiringPi
+        fd = wiringPiI2CSetup(i2cAddress);
 
-    ~DisplayController() { // Class destructor
+        if (fd == -1) {
+            std::cerr << "Failed to initialize I2C communication.\n";
+            throw std::runtime_error("I2C Setup failed");
+        }
+
+        init();  // Initialize the display
+    }
+
+    void init() {
+        sendCmd(0x33);  // Initialize for 4-bit mode
+        sendCmd(0x32);  // Set to 4-bit mode
+        sendCmd(0x28);  // Function Set: 2 lines, 5x7 matrix
+        sendCmd(0x0C);  // Display ON, Cursor OFF
+        sendCmd(0x06);  // Entry mode set: Increment cursor, no display shift
         clear();
-        send_cmd(0x01); // Turn off the display
     }
 
-    void display_setup() {
-        wiringPiSetup();
-        fd = wiringPiI2CSetup(0x27);
-
-        lcd_send_cmd(0x02);  // Initialize LCD in 4-bit mode
-        lcd_send_cmd(0x28);  // 2 lines, 5x7 matrix
-        lcd_send_cmd(0x0C);  // Turn cursor off
-        lcd_send_cmd(0x06);  // Auto increment cursor
-        lcd_clear();         // Clear display
+    void clear() {
+        sendCmd(0x01);  // Clear display
+        delay(2000);    // Delay for clearing to complete
     }
 
-    void display_string(const char *str) { // display strings
-        while (*str) display_send_data(*str++);
-    }
-
-    void display_clear() {
-        lcd_send_cmd(0x01);  // Clear display
-        delay(2000);         // Delay for 2 seconds
+    void displayString(const char *str) {
+        while (*str) sendData(*str++);
     }
 };
 
-#endif //INC_2IO75_DISPLAYCONTROLLER_H
+#endif // DISPLAYCONTROLLER_H
