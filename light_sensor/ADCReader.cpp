@@ -37,4 +37,7 @@ void ADCReader::runContinuousRead() {
     std::cout << "Starting ADC readings...\n";
     while (true) {
         int value = readADCChannel(0xC183);
-        std::cout << "ADC
+        std::cout << "ADC value: " << value << "mV\n";
+        usleep(1000000); // 1s delay
+    }
+}
