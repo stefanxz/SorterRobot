@@ -1,11 +1,9 @@
-# Makefile for ADC Reader using wiringPi
-
 CC=g++
 CFLAGS=-c -Wall
 LDFLAGS=-lwiringPi
-SOURCES=main.cpp
+SOURCES=main.cpp ADCReader.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=main
+EXECUTABLE=adc_test
 
 all: $(EXECUTABLE)
 
