@@ -7,7 +7,10 @@ const int adc_address = 0x48; // ADS1115 default address
 const int config_register = 0x01;
 const int conversion_register = 0x00;
 
-int channel_config = 0xC583; // Configs for channels 0 to 3
+const int white = 8;
+const int black = 1;
+
+int channel_config = 0xC183; // Configs for channels 0 to 3
 
 void init_adc(int fd, int config) {
     int msb = (config >> 8) & 0xFF;
@@ -37,7 +40,14 @@ int main() {
     while (true) {
         int value = read_adc_channel(fd, channel_config);
         std::cout << "ADC value: " << value << "mV\n";
-        usleep(500000); // 0.5s delay
+        if (abs(value - white) <= 1) {
+            std::cout << "White detected.\n";
+        } else if (value <= black) {
+            std::cout << "Black detected.\n";
+        } else {
+            std::cout << "Error color.\n";
+        }
+        usleep(1000000); // 1s delay
     }
 
     return 0;
