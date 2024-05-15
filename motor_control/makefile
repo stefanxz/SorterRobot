@@ -6,7 +6,7 @@ CXXFLAGS=-I. -std=c++11 -Wall
 LDFLAGS=-lwiringPi -lpthread
 
 # Source files in the src/ directory
-SOURCES=src/main.cpp
+SOURCES=main.cpp
 
 # Object files
 OBJECTS=$(SOURCES:.cpp=.o)
