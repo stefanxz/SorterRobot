@@ -1,53 +1,52 @@
-// Servo.h
 #ifndef SERVO_H
 #define SERVO_H
 
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <iostream>
-#include <cmath>    // for std::round
 #include <unistd.h> // for usleep
+
+#define FORWARD 4   // Minimum effective PWM position
+#define BACKWARD 24 // Maximum effective PWM position
 
 class Servo {
 public:
-    Servo(int pin) : pin(pin), rangeStart(4), rangeEnd(26){
-        wiringPiSetupPhys(); // Use the physical pin numbering scheme
-        softPwmCreate(pin, rangeStart, rangeEnd); // Setup PWM on the pin
+    explicit Servo(int pin) : pin(pin), pwmMin(FORWARD), pwmMax(BACKWARD) {
+        static bool initialized = false;
+        if (!initialized) {
+            wiringPiSetupPhys(); // Use the physical pin numbering scheme
+            initialized = true;
+        }
+        softPwmCreate(pin, 0, pwmMax - pwmMin + 1); // Setup PWM on the pin with adjusted range
     }
 
     ~Servo() {
-        std::cout << "Stopping servo" << std::endl;
+        std::cout << "Stopping servo on pin " << pin << std::endl;
         softPwmStop(pin); // Stop PWM
         pinMode(pin, INPUT); // Reset pin to input to stop signal
     }
 
-    void moveToAngle(int angle) {
-        if (angle < 0 || angle > 180) {
-            std::cerr << "Angle out of range" << std::endl;
-            return;
-        }
-
-        int position = std::round((angle / 180.0) * 21); // Calculate the position from 0 to 19
-        std::cout << "Computed position " << position << std::endl;
-        moveToPosition(position);
-    }
-
-    void moveToPosition(int pos) {
-        int actualPos = pos + 4; // Adjust for internal PWM range shift
-        std::cout << "Actual position " << actualPos << std::endl;
-        if (actualPos < rangeStart || actualPos > rangeEnd) {
-            std::cerr << "Position out of range" << std::endl;
-            return;
-        }
-        std::cout << "Moving to position: " << pos << " (actual PWM position: " << actualPos << ")" << std::endl;
-        softPwmWrite(pin, actualPos);
-        usleep(1000000); // Delay to allow servo to move
+    void movePiston(int time) {
+        std::cout << "Moving piston on pin " << pin << std::endl;
+        pushPiston(time);
+        pullPiston(time);
     }
 
 private:
+    void pushPiston(int time) {
+        std::cout << "Pushing piston on pin " << pin << std::endl;
+        softPwmWrite(pin, pwmMin); // Use defined FORWARD position
+        usleep(time);
+    }
+
+    void pullPiston(int time) {
+        std::cout << "Pulling piston on pin " << pin << std::endl;
+        softPwmWrite(pin, pwmMax); // Use defined BACKWARD position
+        usleep(time);
+    }
+
     int pin;
-    int rangeStart;
-    int rangeEnd;
+    int pwmMin, pwmMax;
 };
 
 #endif // SERVO_H
