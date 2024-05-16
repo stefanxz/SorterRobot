@@ -10,7 +10,6 @@
 Makefile
 **/Makefile
 
-
 # Backup files
 *~
 
@@ -20,3 +19,6 @@ Makefile
 .idea/
 *.swp
 *.swo
+
+# Ignoring specific CMakeLists.txt
+/CMakeLists.txt
