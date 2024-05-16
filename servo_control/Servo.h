@@ -7,7 +7,7 @@
 #include <unistd.h> // for usleep
 
 #define FORWARD 4   // Minimum effective PWM position
-#define BACKWARD 24 // Maximum effective PWM position
+#define BACKWARD 18 // Maximum effective PWM position
 
 class Servo {
 public:
@@ -17,7 +17,7 @@ public:
             wiringPiSetupPhys(); // Use the physical pin numbering scheme
             initialized = true;
         }
-        softPwmCreate(pin, 0, pwmMax - pwmMin + 1); // Setup PWM on the pin with adjusted range
+        softPwmCreate(pin, 4, 24); // Setup PWM on the pin with adjusted range
     }
 
     ~Servo() {
@@ -35,13 +35,13 @@ public:
 private:
     void pushPiston(int time) {
         std::cout << "Pushing piston on pin " << pin << std::endl;
-        softPwmWrite(pin, pwmMin); // Use defined FORWARD position
+        softPwmWrite(pin, FORWARD); // Use defined FORWARD position
         usleep(time);
     }
 
     void pullPiston(int time) {
         std::cout << "Pulling piston on pin " << pin << std::endl;
-        softPwmWrite(pin, pwmMax); // Use defined BACKWARD position
+        softPwmWrite(pin, BACKWARD); // Use defined BACKWARD position
         usleep(time);
     }
 
