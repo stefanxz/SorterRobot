@@ -1,5 +1,5 @@
 #include <iostream>
-#include <wiringPi.h>
+#include "wiringPi.h"
 
 #define RECEIVER_PIN 16  // Define the pin connected to the L1107 receiver
 
