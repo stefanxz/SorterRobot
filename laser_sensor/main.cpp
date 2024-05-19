@@ -14,7 +14,7 @@ int main() {
         } else {
             std::cout << "No laser beam detected." << std::endl;
         }
-        sleep(1); // Sleep for 1 second
+        sleep(0.5); // Sleep for 1 second
     }
 
     return 0;
