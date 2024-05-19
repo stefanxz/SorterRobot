@@ -1,34 +1,22 @@
 #include <iostream>
 #include <wiringPi.h>
-#include <VL53L0X.h> // Include the library for the VL53L0X sensor
 
-#define ACTION_PIN 40
+#define RECEIVER_PIN 16  // Define the pin connected to the L1107 receiver
 
 int main() {
-    wiringPiSetupPhys(); // Set up WiringPi in physical pin numbering scheme
-    pinMode(ACTION_PIN, OUTPUT); // Set the action pin as an output
-
-    VL53L0X sensor;
-    sensor.init(); // Initialize the sensor
-    sensor.setTimeout(500); // Set a timeout for sensor reading
-    sensor.startContinuous(); // Start continuous measurement
+    wiringPiSetupPhys();  // Set up WiringPi in physical pin numbering scheme
+    pinMode(RECEIVER_PIN, INPUT);  // Set the receiver pin as an input
 
     while (true) {
-        int distance = sensor.readRangeContinuousMillimeters(); // Read distance in millimeters
-        if (sensor.timeoutOccurred()) { 
-            std::cout << "Sensor timeout!" << std::endl;
+        int laserDetected = digitalRead(RECEIVER_PIN);  // Read the state from the laser receiver
+
+        if (laserDetected == HIGH) {
+            std::cout << "Laser beam detected!" << std::endl;
         } else {
-            std::cout << "Distance: " << distance << " mm" << std::endl;
+            std::cout << "No laser beam detected." << std::endl;
         }
 
-        if (distance < 200) { // Example threshold distance
-            digitalWrite(ACTION_PIN, HIGH); // Set the action pin high
-            std::cout << "Detected close object!" << std::endl;
-        } else {
-            digitalWrite(ACTION_PIN, LOW); // Set the action pin low
-        }
-
-        delay(1000); // Delay for 1 second
+        delay(1000);  // Delay for 1 second to limit the output rate
     }
 
     return 0;
