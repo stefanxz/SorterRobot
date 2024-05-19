@@ -1,74 +1,84 @@
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <ESP8266WiFiMulti.h> 
-#include <ESP8266mDNS.h>
-#include <ESP8266WebServer.h>
+#include "WiFiS3.h"  // Ensure this library supports your hardware and WiFi functions similar to WiFiNINA
 
-ESP8266WiFiMulti wifiMulti;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
+char ssid[] = "Holland2Stay";  // Enter your WIFI SSID
+char pass[] = "solutio@365";   // Enter your WIFI password
 
-ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
+WiFiServer server(80);
 
-const int led = 2;
-
-void handleRoot();              // function prototypes for HTTP handlers
-void handleLED();
-void handleNotFound();
-
-void setup(void){
-  Serial.begin(115200);         // Start the Serial communication to send messages to the computer
-  delay(10);
-  Serial.println('\n');
-
-  pinMode(led, OUTPUT);
-  
-  wifiMulti.addAP("Holland2Stay", "solutio@365");   // add Wi-Fi networks you want to connect to
-
-  Serial.println("Connecting ...");
-  int i = 0;
-  while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    delay(250);
-    Serial.print("Wifi not connected");
-  }
-  Serial.println('\n');
-  Serial.print("Connected to ");
-  Serial.println(WiFi.SSID());              // Tell us what network we're connected to
-  Serial.print("IP address:\t");
-  Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer
-
-  if (MDNS.begin("esp8266")) {              // Start the mDNS responder for esp8266.local
-    Serial.println("mDNS responder started");
+void setup() {
+  Serial.begin(9600); // Initialize serial communication
+  if (WiFi.begin(ssid, pass) == WL_CONNECTED) {
+    Serial.println("Connected to the WiFi network");
+    server.begin();  // Start the web server on port 80
+    printWifiStatus();
   } else {
-    Serial.println("Error setting up MDNS responder!");
+    Serial.println("Failed to connect to WiFi");
+    while (true);  // Stay here forever since we cannot connect to WiFi
   }
-
-  server.on("/", HTTP_GET, handleRoot);     // Call the 'handleRoot' function when a client requests URI "/"
-  server.on("/LED", HTTP_POST, handleLED);  // Call the 'handleLED' function when a POST request is made to URI "/LED"
-  server.on("/Kleon", HTTP_GET, handleKleon);
-  server.onNotFound(handleNotFound);        // When a client requests an unknown URI (i.e. something other than "/"), call function "handleNotFound"
-
-  server.begin();                           // Actually start the server
-  Serial.println("HTTP server started");
 }
 
-void loop(void){
-  MDNS.update();
-  server.handleClient();                    // Listen for HTTP requests from clients
+void loop() {
+  webServer();
 }
 
-void handleRoot() {                         // When URI / is requested, send a web page with a button to toggle the LED
-  server.send(200, "text/html", "<form action=\"/LED\" method=\"POST\"><input type=\"submit\" value=\"Toggle LED\"></form>");
+void webServer() {
+  WiFiClient client = server.available();   // Listen for incoming clients
+  if (client) {
+    Serial.println("New Client.");          // Print a message out in the serial port
+    String currentLine = "";                // Make a String to hold incoming data from the client
+    boolean currentLineIsBlank = true;
+
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        Serial.write(c);                    // Debug output of the read character
+        if (c == '\n' || c == '\r') {
+          Serial.println(currentLine);      // Debug output of the current line
+          // Check if the current line is blank, indicating the end of the client's HTTP request
+          if (currentLine.startsWith("GET /kleon ")) {
+            sendCustomMessage(client);
+            break;
+          } else if (currentLineIsBlank) {
+            sendHelloPage(client);
+            break;
+          }
+          currentLine = ""; // Clear the current line after processing
+        } else {
+          currentLine += c; // Add it to the end of the currentLine
+        }
+      }
+    }
+    client.stop();
+    Serial.println("Client Disconnected.");
+  }
 }
 
-void handleKleon() {
-  server.send(200, "text/html", "cock");
+void sendCustomMessage(WiFiClient &client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-type:text/plain");
+  client.println("Connection: close");
+  client.println();
+  client.println("I am a simple Albanian man");
+  client.println();
 }
 
-void handleLED() {                          // If a POST request is made to URI /LED
-  digitalWrite(led,!digitalRead(led));      // Change the state of the LED
-  server.sendHeader("Location","/");        // Add a header to respond with a new location for the browser to go to the home page again
-  server.send(303);                         // Send it back to the browser with an HTTP status 303 (See Other) to redirect
+void sendHelloPage(WiFiClient &client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-type:text/html");
+  client.println("Connection: close");
+  client.println();
+  client.println("<!DOCTYPE html><html>");
+  client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+  client.println("<link rel=\"icon\" href=\"data:,\">");
+  client.println("<title>Hello Page</title></head>");
+  client.println("<body><h1>Hello</h1></body></html>");
+  client.println();
 }
 
-void handleNotFound(){
-  server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
+void printWifiStatus() {
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+  Serial.print("Open this URL in your browser to view the page: http://");
+  Serial.println(ip);
 }
