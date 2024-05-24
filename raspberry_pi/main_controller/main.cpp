@@ -6,7 +6,6 @@
 #include "../util/light_sensor/ADCReader.h"
 #include "../util/motor_control/MotorController.h"
 #include "../util/servo_control/Servo.h"
-#define PISTONTIME 1500000
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <wiringPiI2C.h>
@@ -17,7 +16,7 @@ using namespace std;
 int main() {
 
     Servo servoController(11);
-    servoController.movePiston(PISTONTIME);
+    servoController.movePiston();
 
     return 0;
 }
