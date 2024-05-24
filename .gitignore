@@ -1,0 +1,24 @@
+# Executable files
+*.exe
+*.out
+*.bin
+
+# Object files
+*.o
+
+# Makefiles
+Makefile
+**/Makefile
+
+# Backup files
+*~
+
+# Other files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignoring specific CMakeLists.txt
+/CMakeLists.txt
