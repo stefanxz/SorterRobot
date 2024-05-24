@@ -8,7 +8,7 @@
 
 class ADCReader {
 public:
-    ADCReader(int address);
+    explicit ADCReader(int address);
     ~ADCReader();
     void initADC(int config);
     int readADCChannel(int channelConfig);
