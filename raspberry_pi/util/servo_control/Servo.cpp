@@ -17,25 +17,22 @@ Servo::Servo(int pin) : pin(pin), pwmMin(FORWARD), pwmMax(BACKWARD) {
 }
 
 Servo::~Servo() {
-    std::cout << "Stopping servo on pin " << pin << std::endl;
     softPwmStop(pin); // Stop PWM
     pinMode(pin, INPUT); // Reset pin to input to stop signal
 }
 
 void Servo::movePiston(int time) {
-    std::cout << "Moving piston on pin " << pin << std::endl;
+    std::cout << "Moving piston on pin" << " " << pin << std::endl;
     pushPiston(time);
     pullPiston(time);
 }
 
 void Servo::pushPiston(int time) {
-    std::cout << "Pushing piston on pin " << pin << std::endl;
     softPwmWrite(pin, FORWARD); // Use defined FORWARD position
     usleep(time);
 }
 
 void Servo::pullPiston(int time) {
-    std::cout << "Pulling piston on pin " << pin << std::endl;
     softPwmWrite(pin, BACKWARD); // Use defined BACKWARD position
     usleep(time - 150000);
 }

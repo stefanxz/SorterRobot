@@ -4,7 +4,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <iostream>
-#include <unistd.h> // for usleep
+#include <unistd.h>
 
 class Servo {
 public:

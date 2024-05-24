@@ -12,7 +12,7 @@ DisplayController::DisplayController(int i2cAddress) {
         throw std::runtime_error("I2C Setup failed");
     }
 
-    init();  // Initialize the display
+    displayInit();  // Initialize the display
 }
 
 void DisplayController::displayInit() {
@@ -21,7 +21,7 @@ void DisplayController::displayInit() {
     sendCmd(0x28);  // Function Set: 2 lines, 5x7 matrix
     sendCmd(0x0C);  // Display ON, Cursor OFF
     sendCmd(0x06);  // Entry mode set: Increment cursor, no display shift
-    clear();
+    displayClear();
 }
 
 void DisplayController::displayClear() {
