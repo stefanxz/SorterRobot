@@ -1,7 +1,7 @@
 #ifndef ServerHandler_h
 #define ServerHandler_h
 
-#include "WiFiS3.h"
+#include <WiFiS3.h> 
 #include "Car.h"
 
 class ServerHandler {
@@ -13,7 +13,12 @@ public:
 private:
   WiFiServer server;
   Car &car;
-  void handlePostRequest(WiFiClient &client, String &header);
+  
+  void serveHomePage(WiFiClient &client);
+  void handlePostRequest(WiFiClient &client, String &path, String &body);
+  void handleDriveRequest(WiFiClient &client, String &body);
+  void processRequest(WiFiClient &client, String &header);
+  void handleGetRequest(WiFiClient &client, String &path);
 };
 
-#endif
+#endif // ServerHandler_h

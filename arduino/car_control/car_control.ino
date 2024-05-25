@@ -8,7 +8,11 @@ const int motor2Pin1 = 10;
 const int motor2Pin2 = 11;
 const int motor2PWM = 12;
 
-void setup() {
+const int speed = 75;
+const int time = 500;
+
+void setup()
+{
   // Set motor 1 pins as outputs
   pinMode(motor1Pin1, OUTPUT);
   pinMode(motor1Pin2, OUTPUT);
@@ -20,28 +24,39 @@ void setup() {
   pinMode(motor2PWM, OUTPUT);
 }
 
-void loop() {
+void loop()
+{
   // Run motor 1 forward at half speed
-  for(int i = 0; i < 5; i++) {
-    digitalWrite(motor1Pin1, HIGH);
-    digitalWrite(motor1Pin2, LOW);
-    analogWrite(motor1PWM, 255); // Speed range is 0 to 255
+  for (int i = 0; i <= 5; i++)
+  {
+    if (i % 2 == 0)
+    {
+      digitalWrite(motor1Pin1, HIGH);
+      digitalWrite(motor1Pin2, LOW);
+      analogWrite(motor1PWM, speed); // Speed range is 0 to 255
 
-    // Run motor 2 backward at half speed
-    digitalWrite(motor2Pin1, HIGH);
-    digitalWrite(motor2Pin2, LOW);
-    analogWrite(motor2PWM, 255); // Speed range is 0 to 255
+      // Run motor 2 backward at half speed
+      digitalWrite(motor2Pin1, HIGH);
+      digitalWrite(motor2Pin2, LOW);
+      analogWrite(motor2PWM, speed); // Speed range is 0 to 255
+    }
+    else
+    {
+      digitalWrite(motor1Pin1, LOW);
+      digitalWrite(motor1Pin2, HIGH);
+      analogWrite(motor1PWM, speed); // Speed range is 0 to 255
 
-    delay(2000); // Run for 2 seconds
-
-    // Stop both motors
-    stopMotors();
-
-    delay(1000); // Wait for 1 second
+      // Run motor 2 forward at half speed
+      digitalWrite(motor2Pin1, LOW);
+      digitalWrite(motor2Pin2, HIGH);
+      analogWrite(motor2PWM, speed); // Speed range is 0 to 255
+    }
+    delay(time); // Delay for 1 second
   }
 }
 
-void stopMotors() {
+void stopMotors()
+{
   // Stop motor 1
   digitalWrite(motor1Pin1, LOW);
   digitalWrite(motor1Pin2, LOW);

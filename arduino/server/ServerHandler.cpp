@@ -1,9 +1,8 @@
 #include "ServerHandler.h"
 
-ServerHandler::ServerHandler(Car &car) : server(80), car(car) {}
+ServerHandler::ServerHandler(Car &car) : car(car) {}
 
 void ServerHandler::begin() {
-  // WiFi setup and server begin logic
   server.begin();
 }
 
@@ -11,49 +10,80 @@ void ServerHandler::handleClient() {
   WiFiClient client = server.available();
   if (!client) return;
 
-  String header = "";
+  String line, method, path, body;
   bool currentLineIsBlank = true;
+  bool isPost = false;
 
   while (client.connected()) {
     if (client.available()) {
       char c = client.read();
-      header += c;
-
-      if (c == '\n' && currentLineIsBlank) {
-        // We have the full header up to a blank line
-        handlePostRequest(client, header);
-        break;
-      }
       if (c == '\n') {
+        if (currentLineIsBlank && isPost) {
+          // If it's a POST request and the headers are done, read the body
+          body = client.readStringUntil('\n');
+          handlePostRequest(client, path, body);
+          break;
+        }
         currentLineIsBlank = true;
       } else if (c != '\r') {
         currentLineIsBlank = false;
       }
+      line += c;
+      if (line.endsWith("\r\n") && method.isEmpty()) {
+        // This should only run once, the first line containing the method and path
+        int firstSpace = line.indexOf(' ');
+        int secondSpace = line.indexOf(' ', firstSpace + 1);
+        method = line.substring(0, firstSpace);
+        path = line.substring(firstSpace + 1, secondSpace);
+        isPost = method.equals("POST");
+        line = ""; // Reset for next line
+      }
     }
+  }
+  if (method == "GET") {
+    handleGetRequest(client, path);
   }
   client.stop();
 }
 
-void ServerHandler::handlePostRequest(WiFiClient &client, String &header) {
-  // Split the header into lines
-  String line;
-  while (client.connected() && (line = client.readStringUntil('\n'))) {
-    // Check if the line contains the "gate" parameter
-    if (line.startsWith("gate=")) {
-      // Extract the value of the "gate" parameter
-      int index = line.indexOf("=") + 1;
-      int gate = line.substring(index).toInt();
-      // Use the extracted gate value
-      car.driveToGate(gate);
-      break; // Exit the loop after processing the "gate" parameter
-    }
+void ServerHandler::handleGetRequest(WiFiClient &client, String &path) {
+  if (path == "/ ") {
+    serveHomePage(client);
   }
+  // Other GET paths can be handled here later
+}
 
-  // Send HTTP response
+void ServerHandler::handlePostRequest(WiFiClient &client, String &path, String &body) {
+  if (path == "/drive") {
+    handleDriveRequest(client, body);
+  }
+  // Other POST paths can be handled here later
+}
+
+void ServerHandler::serveHomePage(WiFiClient &client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-type: text/html");
+  client.println("Connection: close");
+  client.println();
+  client.println("<!DOCTYPE html><html>");
+  client.println("<head><title>Arduino Car Controller</title></head>");
+  client.println("<body><h1>Welcome to the Arduino Car Controller</h1>");
+  client.println("<form action=\"/drive\" method=\"post\">");
+  client.println("<input type=\"text\" name=\"gate\" placeholder=\"Enter gate number\">");
+  client.println("<input type=\"submit\" value=\"Drive\">");
+  client.println("</form></body></html>");
+}
+
+void ServerHandler::handleDriveRequest(WiFiClient &client, String &body) {
+  int startPos = body.indexOf("gate=") + 5;
+  int endPos = body.indexOf('&', startPos);
+  if (endPos == -1) endPos = body.length();
+  int gate = body.substring(startPos, endPos).toInt();
+  car.driveToGate(gate);
+
   client.println("HTTP/1.1 200 OK");
   client.println("Content-type: text/plain");
   client.println("Connection: close");
   client.println();
   client.println("Command received");
 }
-
