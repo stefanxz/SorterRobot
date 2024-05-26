@@ -44,7 +44,7 @@ MotorController.o: $(MOTOR_CONTROL_DIR)/MotorController.cpp $(MOTOR_CONTROL_DIR)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 # Servo Controller
-Servo.o: $(SERVO_CONTROL_DIR)/Servo.cpp $(SERVO_CONTROL_DIR)/Servo.h
+Servo.o: $(SERVO_CONTROL_DIR)/ServoController.cpp $(SERVO_CONTROL_DIR)/ServoController.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 # Laser Receiver

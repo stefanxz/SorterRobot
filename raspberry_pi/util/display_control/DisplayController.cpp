@@ -4,7 +4,6 @@
 #include "DisplayController.h"
 
 DisplayController::DisplayController(int i2cAddress) {
-    wiringPiSetup();  // Initialize wiringPi
     fd = wiringPiI2CSetup(i2cAddress);
 
     if (fd == -1) {

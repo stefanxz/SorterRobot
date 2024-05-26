@@ -1,7 +1,6 @@
 #include "ADCReader.h"
 
 ADCReader::ADCReader(int address) : adc_address(address) {
-    wiringPiSetup();
     fd = wiringPiI2CSetup(adc_address);
     if (fd == -1) {
         std::cerr << "Failed to init I2C communication.\n";

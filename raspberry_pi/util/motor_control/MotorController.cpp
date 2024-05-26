@@ -6,7 +6,6 @@
 MotorController::MotorController(int pinIn1, int pinIn2, int pinEn) : in1(pinIn1), in2(pinIn2), en(pinEn) {}
 
 void MotorController::setup() {
-    wiringPiSetupPhys(); // Initialize wiringPi using the Broadcom GPIO pin numbers
     pinMode(in1, OUTPUT);
     pinMode(in2, OUTPUT);
     pinMode(en, OUTPUT);
@@ -17,7 +16,8 @@ void MotorController::setup() {
 }
 
 // Run the motor in either forward or backward direction based on the boolean direction
-void MotorController::run(bool direction, int speed) {
+void MotorController::run(bool direction) {
+    changeSpeed();
     digitalWrite(in1, direction ? HIGH : LOW);
     digitalWrite(in2, direction ? LOW : HIGH);
     softPwmWrite(en, speed);
@@ -32,7 +32,7 @@ void MotorController::stop() {
 }
 
 // Change the PWM speed
-void MotorController::changeSpeed(int speed) {
+void MotorController::changeSpeed() {
     softPwmWrite(en, speed);
     std::cout << "Speed changed to " << speed << "%" << std::endl;
 }
