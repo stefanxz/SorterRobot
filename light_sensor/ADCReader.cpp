@@ -41,3 +41,8 @@ void ADCReader::runContinuousRead() {
         usleep(1000000); // 1s delay
     }
 }
+
+std::string ADCReader::rgbToString(int result) {
+    std::string color = "Color: black        Gate: 2";
+    return color;
+}

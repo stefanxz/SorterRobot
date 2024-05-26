@@ -13,6 +13,7 @@ public:
     void initADC(int config);
     int readADCChannel(int channelConfig);
     void runContinuousRead();
+    std::string rgbToString(int result);
 
 private:
     int adc_address;
