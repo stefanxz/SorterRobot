@@ -3,7 +3,7 @@
 //
 #include "MotorController.h"
 
-MotorController::MotorController(int pinIn1, int pinIn2, int pinEn) {}
+MotorController::MotorController(int pinIn1, int pinIn2, int pinEn) : in1(pinIn1), in2(pinIn2), en(pinEn) {}
 
 void MotorController::setup() {
     wiringPiSetupGpio(); // Initialize wiringPi using the Broadcom GPIO pin numbers
