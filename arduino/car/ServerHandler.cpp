@@ -10,6 +10,8 @@ void ServerHandler::handleClient() {
   WiFiClient client = server.available();
   if (!client) return;
 
+  Serial.println("Client connected");
+
   String line, method, path, body;
   bool currentLineIsBlank = true;
   bool isPost = false;
@@ -54,6 +56,7 @@ void ServerHandler::handleGetRequest(WiFiClient &client, String &path) {
 }
 
 void ServerHandler::handlePostRequest(WiFiClient &client, String &path, String &body) {
+  Serial.println("Post request received.");
   if (path == "/drive") {
     handleDriveRequest(client, body);
   }

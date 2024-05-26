@@ -4,16 +4,17 @@
 Car car;
 ServerHandler serverHandler(car);
 
-void setup() {
+void setup()
+{
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(9600);
-  while (!Serial) {
-    digitalWrite(LED_BUILTIN, HIGH);
+  while (!Serial)
+  {
     delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
   }
   WiFi.begin("Kleon", "22222222"); // Include actual SSID and password
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -23,6 +24,7 @@ void setup() {
   serverHandler.begin();
 }
 
-void loop() {
+void loop()
+{
   serverHandler.handleClient();
 }
