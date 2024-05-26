@@ -10,7 +10,7 @@ public:
     bool isLaserDetected() const;
 
 private:
-    int pin_;
+    int pin;
 };
 
 #endif // LASER_RECEIVER_H

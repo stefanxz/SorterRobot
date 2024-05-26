@@ -9,13 +9,15 @@ DISPLAY_DIR = $(UTIL_DIR)/display_control
 LIGHT_SENSOR_DIR = $(UTIL_DIR)/light_sensor
 MOTOR_CONTROL_DIR = $(UTIL_DIR)/motor_control
 SERVO_CONTROL_DIR = $(UTIL_DIR)/servo_control
+LASER_SENSOR_DIR = $(UTIL_DIR)/laser_sensor
 
 # Define all object files.
 OBJ = main.o \
       DisplayController.o \
       ADCReader.o \
       MotorController.o \
-      Servo.o
+      Servo.o \
+      LaserReceiver.o
 
 # The build target executable:
 TARGET = main
@@ -43,6 +45,10 @@ MotorController.o: $(MOTOR_CONTROL_DIR)/MotorController.cpp $(MOTOR_CONTROL_DIR)
 
 # Servo Controller
 Servo.o: $(SERVO_CONTROL_DIR)/Servo.cpp $(SERVO_CONTROL_DIR)/Servo.h
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+# Laser Receiver
+LaserReceiver.o: $(LASER_SENSOR_DIR)/LaserReceiver.cpp $(LASER_SENSOR_DIR)/LaserReceiver.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 run: $(TARGET)
