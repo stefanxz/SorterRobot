@@ -38,7 +38,7 @@ ADCReader.o: $(LIGHT_SENSOR_DIR)/ADCReader.cpp $(LIGHT_SENSOR_DIR)/ADCReader.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 # Motor Controller
-MotorController.o: $(MOTOR_CONTROL_DIR)/MotorControl.cpp $(MOTOR_CONTROL_DIR)/MotorController.h
+MotorController.o: $(MOTOR_CONTROL_DIR)/MotorController.cpp $(MOTOR_CONTROL_DIR)/MotorController.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 # Servo Controller
