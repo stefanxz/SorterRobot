@@ -12,7 +12,7 @@ int main() {
     bool direction = true; // true = forward, false = backward
     int speed = 25; // default speed
 
-    MotorController motor(24, 23, 25);
+    MotorController motor(11, 13, 15);
     motor.setup();
 
     cout << "The default speed & direction of motor is LOW & Forward....." << endl;
