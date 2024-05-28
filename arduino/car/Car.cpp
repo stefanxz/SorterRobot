@@ -69,6 +69,7 @@ void Car::setSpeed(int newSpeed)
     }
 }
 
-bool Car::isReady() {
-  return ready;
+bool Car::isReady()
+{
+    return ready;
 }
