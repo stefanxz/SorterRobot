@@ -14,12 +14,10 @@
 
 using namespace std;
 
-
-
-int main() {
-
-    Servo servoController(11);
-    servoController.movePiston();
+int main()
+{
+    ADCReader adc(0x48);
+    adc.runContinuousRead();
 
     return 0;
 }

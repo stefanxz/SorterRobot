@@ -6,7 +6,8 @@
 #include <wiringPiI2C.h>
 #include <unistd.h>
 
-class ADCReader {
+class ADCReader
+{
 public:
     explicit ADCReader(int address);
     ~ADCReader();
