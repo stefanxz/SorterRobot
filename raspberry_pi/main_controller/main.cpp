@@ -1,6 +1,3 @@
-//
-// Created by Stefan on 24.05.2024.
-//
 #include <iostream>
 #include "../util/display_control/DisplayController.h"
 #include "../util/light_sensor/ADCReader.h"
@@ -14,12 +11,31 @@
 
 using namespace std;
 
-
-
 int main() {
-
     Servo servoController(11);
     servoController.movePiston();
+
+    // Laser receiver setup
+    LaserReceiver laserReceiver(7);  // Assuming the pin is 7 for this example
+    laserReceiver.init();
+
+    const int noLaserDetectionThreshold = 10000; // Threshold for laser non-detection in milliseconds
+    const int runLaserLoopDelay = 1; // Delay in seconds for the laser detection Loop
+    int detectionTime = millis();  // Initialize detection time to current time
+
+    while (true) {
+        if (!laserReceiver.isLaserDetected()) {
+            int currentTime = millis();
+            int elapsedTime = currentTime - detectionTime;
+            if (elapsedTime >= noLaserDetectionThreshold) {
+                cout << "Unfit object detected" << endl;
+                detectionTime = currentTime; // Reset detection time
+            }
+        } else {
+            detectionTime = millis(); // Reset the timer when laser is detected
+        }
+        sleep(runLaserLoopDelay);  // Pause the loop for runLaserLoopDelay seconds before next check
+    }
 
     return 0;
 }
