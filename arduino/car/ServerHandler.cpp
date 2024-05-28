@@ -16,44 +16,58 @@ void ServerHandler::handleClient() {
     bool headersComplete = false;
 
     while (client.connected()) {
-        if (client.available()) {
+        while (client.available()) {
             char c = client.read();
             line += c;
 
-            // Debug output to see what's being read
-            Serial.print(c);
+            // Capture body as soon as headers are complete
+            if (headersComplete) {
+                if (method == "POST") {
+                    // Continue reading the body until no more data is available
+                    body += c;
+                }
+            }
 
             // Check if we've reached the end of the headers
-            if (line.endsWith("\r\n\r\n")) {
+            if (!headersComplete && line.endsWith("\r\n\r\n")) {
                 headersComplete = true;
                 int firstSpace = line.indexOf(' ');
                 int secondSpace = line.indexOf(' ', firstSpace + 1);
                 method = line.substring(0, firstSpace);
-                path = trimString(line.substring(firstSpace + 1, secondSpace)); // Use trimString to remove spaces
+                path = trimString(line.substring(firstSpace + 1, secondSpace));
                 Serial.print("Method: "); Serial.println(method);
                 Serial.print("Path: "); Serial.println(path);
 
-                // Handle the request immediately if it's a GET request
-                if (method == "GET") {
-                    Serial.println("GET request received.");
-                    handleGetRequest(client, path);
-                    break;  // Handle only one request at a time
-                } else if (method == "POST") {
-                    // For POST, further processing might be needed to handle the body
-                    body = line.substring(line.indexOf("\r\n\r\n") + 4);  // Assuming body starts immediately after headers
-                    handlePostRequest(client, path, body);
-                    break;  // Handle only one request at a time
+                if (method == "POST") {
+                    // Prepare to capture the body immediately after the headers
+                    int bodyStartIndex = line.indexOf("\r\n\r\n") + 4;
+                    body = line.substring(bodyStartIndex);
                 }
 
-                // Clear the line buffer after processing the request
-                line = "";  
+                // Clear the line buffer after headers to prevent re-processing
+                line = "";
+            }
+        }
+
+        // Handle the request based on the method
+        if (headersComplete) {
+            if (method == "GET") {
+                Serial.println("Handling GET request.");
+                handleGetRequest(client, path);
+                break;  // Exit after handling
+            } else if (method == "POST") {
+                Serial.println("Handling POST request.");
+                handlePostRequest(client, path, body);
+                break;  // Exit after handling
             }
         }
     }
 
     // Ensure the client connection is closed after handling the request
+    Serial.println("Closing client connection.");
     client.stop();
 }
+
 
 void ServerHandler::handleGetRequest(WiFiClient &client, String &path) {
   if (path == "/") {
@@ -89,8 +103,6 @@ void ServerHandler::serveHomePage(WiFiClient &client)
 
 void ServerHandler::handleDriveRequest(WiFiClient &client, String &body)
 {
-    Serial.println("Body: " + body);  // Debug: Output the body to see what is received exactly
-
     // Assuming body is in the form "gate=number"
     int gate = 0;
     int startPos = body.indexOf("gate="); // Find the start position of 'gate='
@@ -107,6 +119,8 @@ void ServerHandler::handleDriveRequest(WiFiClient &client, String &body)
         Serial.println("Gate parameter not found.");
     }
 
+
+  car.driveToGate(gate);
   client.println("HTTP/1.1 200 OK");
   client.println("Content-type: text/plain");
   client.println("Connection: close");
