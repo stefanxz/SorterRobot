@@ -9,6 +9,7 @@ public:
   ServerHandler(Car &car);
   void begin();
   void handleClient();
+  void handleIsReadyRequest(WiFiClient &client);
 
   String trimString(String str) {
     if (str.length() == 0) return str;

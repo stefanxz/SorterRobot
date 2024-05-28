@@ -74,6 +74,9 @@ void ServerHandler::handleGetRequest(WiFiClient &client, String &path) {
     serveHomePage(client);
   }
   // Other GET paths can be handled here later
+  if (path == "/ready") {
+    handleIsReadyRequest(client);
+  }
 }
 
 void ServerHandler::handlePostRequest(WiFiClient &client, String &path, String &body)
@@ -99,6 +102,19 @@ void ServerHandler::serveHomePage(WiFiClient &client)
   client.println("<input type=\"text\" name=\"gate\" placeholder=\"Enter gate number\">");
   client.println("<input type=\"submit\" value=\"Drive\">");
   client.println("</form></body></html>");
+}
+
+void ServerHandler::handleIsReadyRequest(WiFiClient &client)
+{
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-type: text/html");
+  client.println("Connection: close");
+  client.println();
+  if (car.isReady()){
+    client.println("1: car ready");
+  } else {
+    client.println("0: car not ready");
+  }
 }
 
 void ServerHandler::handleDriveRequest(WiFiClient &client, String &body)

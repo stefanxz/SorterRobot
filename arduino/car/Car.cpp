@@ -47,12 +47,7 @@ void Car::driveBackward(int milliseconds)
 
 void Car::driveToGate(int gate)
 {
-    if (gate == 1) {
-      driveForward(500);
-    } else {
-      Serial.println(gate);
-      Serial.println("That's my gate");
-    }
+    driveForward(1000);
 }
 
 void Car::stopMotors()
@@ -72,4 +67,8 @@ void Car::setSpeed(int newSpeed)
     {
         speed = newSpeed; // Update the speed variable
     }
+}
+
+bool Car::isReady() {
+  return ready;
 }
