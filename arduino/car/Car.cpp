@@ -4,86 +4,73 @@
 Car::Car()
 {
     setupMotors(); // Setup the motor pins on object creation
-    Car::Car()
+}
+
+void Car::setupMotors()
+{
+    pinMode(motor1Pin1, OUTPUT);
+    pinMode(motor1Pin2, OUTPUT);
+    pinMode(motor1PWM, OUTPUT);
+
+    pinMode(motor2Pin1, OUTPUT);
+    pinMode(motor2Pin2, OUTPUT);
+    pinMode(motor2PWM, OUTPUT);
+}
+void Car::driveForward(int milliseconds)
+{
+    digitalWrite(motor1Pin1, HIGH);
+    digitalWrite(motor1Pin2, LOW);
+    analogWrite(motor1PWM, speed);
+
+    digitalWrite(motor2Pin1, HIGH);
+    digitalWrite(motor2Pin2, LOW);
+    analogWrite(motor2PWM, speed);
+
+    delay(milliseconds);
+    delay(milliseconds);
+    stopMotors();
+}
+void Car::driveBackward(int milliseconds)
+{
+    digitalWrite(motor1Pin1, LOW);
+    digitalWrite(motor1Pin2, HIGH);
+    analogWrite(motor1PWM, speed);
+
+    digitalWrite(motor2Pin1, LOW);
+    digitalWrite(motor2Pin2, HIGH);
+    analogWrite(motor2PWM, speed);
+    analogWrite(motor2PWM, speed);
+
+    delay(milliseconds);
+    delay(milliseconds);
+    stopMotors();
+}
+
+void Car::driveToGate(int gate)
+{
+    driveForward(1000);
+}
+
+void Car::stopMotors()
+{
+    digitalWrite(motor1Pin1, LOW);
+    digitalWrite(motor1Pin2, LOW);
+    analogWrite(motor1PWM, 0);
+
+    digitalWrite(motor2Pin1, LOW);
+    digitalWrite(motor2Pin2, LOW);
+    analogWrite(motor2PWM, 0);
+}
+
+void Car::setSpeed(int newSpeed)
+{
+    if (speed >= 0 && speed <= 100)
     {
-        setupMotors(); // Setup the motor pins on object creation
+        speed = newSpeed; // Update the speed variable
     }
+}
 
-    void Car::setupMotors()
-    {
-        void Car::setupMotors()
-        {
-            pinMode(motor1Pin1, OUTPUT);
-            pinMode(motor1Pin2, OUTPUT);
-            pinMode(motor1PWM, OUTPUT);
-
-            pinMode(motor2Pin1, OUTPUT);
-            pinMode(motor2Pin2, OUTPUT);
-            pinMode(motor2PWM, OUTPUT);
-        }
-
-        void Car::driveForward(int milliseconds)
-        {
-            void Car::driveForward(int milliseconds)
-            {
-                digitalWrite(motor1Pin1, HIGH);
-                digitalWrite(motor1Pin2, LOW);
-                analogWrite(motor1PWM, speed);
-
-                digitalWrite(motor2Pin1, HIGH);
-                digitalWrite(motor2Pin2, LOW);
-                analogWrite(motor2PWM, speed);
-
-                delay(milliseconds);
-                delay(milliseconds);
-                stopMotors();
-            }
-
-            void Car::driveBackward(int milliseconds)
-            {
-                void Car::driveBackward(int milliseconds)
-                {
-                    digitalWrite(motor1Pin1, LOW);
-                    digitalWrite(motor1Pin2, HIGH);
-                    analogWrite(motor1PWM, speed);
-
-                    digitalWrite(motor2Pin1, LOW);
-                    digitalWrite(motor2Pin2, HIGH);
-                    analogWrite(motor2PWM, speed);
-                    analogWrite(motor2PWM, speed);
-
-                    delay(milliseconds);
-                    delay(milliseconds);
-                    stopMotors();
-                }
-
-                void Car::driveToGate(int gate)
-                {
-                    driveForward(1000);
-                }
-
-                void Car::stopMotors()
-                {
-                    void Car::stopMotors()
-                    {
-                        digitalWrite(motor1Pin1, LOW);
-                        digitalWrite(motor1Pin2, LOW);
-                        analogWrite(motor1PWM, 0);
-
-                        digitalWrite(motor2Pin1, LOW);
-                        digitalWrite(motor2Pin2, LOW);
-                        analogWrite(motor2PWM, 0);
-                    }
-
-                    void Car::setSpeed(int newSpeed)
-                    {
-                        if (speed >= 0 && speed <= 100)
-                        {
-                            speed = newSpeed; // Update the speed variable
-                        }
-                    }
-
-                    bool Car::isReady()
-                    {
-                        return ready;
-                    }
+bool Car::isReady()
+{
+    return ready;
+}
