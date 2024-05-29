@@ -1,7 +1,7 @@
 #include "LaserReceiver.h"
 #include <iostream>
 
-LaserReceiver::LaserReceiver(int pin) : pin_(pin) {}
+LaserReceiver::LaserReceiver(int pin) : pin(pin) {}
 
 void LaserReceiver::init() {
     wiringPiSetupPhys();  // Initialize wiringPi using physical pin numbering

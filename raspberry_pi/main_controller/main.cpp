@@ -3,7 +3,7 @@
 #include "../util/light_sensor/ADCReader.h"
 #include "../util/motor_control/MotorController.h"
 #include "../util/servo_control/Servo.h"
-#include "../../../util/laser_sensor/LaserReceiver.h"
+#include "../util/laser_sensor/LaserReceiver.h"
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <wiringPiI2C.h>
@@ -13,7 +13,7 @@ using namespace std;
 
 int main() {
     // Laser receiver setup
-    LaserReceiver laserReceiver(16);  // Assuming the pin is 7 for this example
+    LaserReceiver laserReceiver(16);  // Assuming the pin is 16 for this example
     laserReceiver.init();
 
     const int noLaserDetectionThreshold = 4000; // Threshold for laser non-detection in milliseconds
