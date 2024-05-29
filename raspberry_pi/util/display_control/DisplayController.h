@@ -8,18 +8,19 @@
 class DisplayController {
 private:
     int fd; // File descriptor for the I2C device
-    void sendCmd(char cmd);
 
+    void sendCmd(char cmd);
+    int i2cAddress;
     void sendData(char data);
 
 public:
-    explicit DisplayController(int i2cAddress);
+    explicit DisplayController(int);
 
     void displayInit();
 
     void displayClear();
 
-    void displayString(const char *str);
+    void displayString(const char *str) const;
 };
 
 #endif // DISPLAYCONTROLLER_H

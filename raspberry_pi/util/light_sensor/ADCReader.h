@@ -10,14 +10,13 @@ class ADCReader {
 public:
     explicit ADCReader(int address);
     ~ADCReader();
-    void initADC(int config);
-    int readADCChannel(int channelConfig);
-    void runContinuousRead();
-
+    void initADC(int config) const;
+    int readADCChannel(int channelConfig) const;
+    void runContinuousRead() const;
 private:
     int adc_address;
     int fd;
-    void configureADC(int config);
+    void configureADC(int config) const;
 };
 
 #endif // ADCREADER_H

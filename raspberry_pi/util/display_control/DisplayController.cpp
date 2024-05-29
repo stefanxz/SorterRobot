@@ -15,12 +15,15 @@ DisplayController::DisplayController(int i2cAddress) {
 }
 
 void DisplayController::displayInit() {
-    sendCmd(0x33);  // Initialize for 4-bit mode
-    sendCmd(0x32);  // Set to 4-bit mode
-    sendCmd(0x28);  // Function Set: 2 lines, 5x7 matrix
-    sendCmd(0x0C);  // Display ON, Cursor OFF
-    sendCmd(0x06);  // Entry mode set: Increment cursor, no display shift
-    displayClear();
+    if(i2cAddress != -1)
+    {
+        sendCmd(0x33);  // Initialize for 4-bit mode
+        sendCmd(0x32);  // Set to 4-bit mode
+        sendCmd(0x28);  // Function Set: 2 lines, 5x7 matrix
+        sendCmd(0x0C);  // Display ON, Cursor OFF
+        sendCmd(0x06);  // Entry mode set: Increment cursor, no display shift
+        displayClear();
+    }
 }
 
 void DisplayController::displayClear() {
@@ -28,7 +31,7 @@ void DisplayController::displayClear() {
     delay(2000);    // Delay for clearing to complete
 }
 
-void DisplayController::displayString(const char *str) {
+void DisplayController::displayString(const char *str) const {
     while (*str) sendData(*str++);
 }
 

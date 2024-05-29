@@ -17,11 +17,11 @@ public:
 
     void setup();
 
-    void run(bool direction);
+    void run(bool direction) const;
 
     void stop();
 
-    void changeSpeed();
+    void changeSpeed() const;
 };
 
 #endif

@@ -18,22 +18,19 @@
 class SorterRobot {
 public:
     SorterRobot(int motorIN1, int motorIN2, int motorEN,
-                int servoPIN, int ADC_Adr, int laserPIN, int displayPIN);
+                int servoPIN, int adcAddress, int laserPIN, int displayAddress);
 
     void system_init(int laserConfig);
 
-    void movePiston();
+    MotorController getMotorController() const;
 
-    void runConveyorBelt(bool direction);
+    ServoController getServoController() const;
 
-    void stopConveyorBelt();
+    ADCReader getAdcReader() const;
 
-    void clearDisplay();
+    LaserReceiver getLaserReceiver() const;
 
-    void displayString(const char *str);
-
-    bool isLaserDetected() const;
-
+    DisplayController getDisplayController() const;
 
 private:
     MotorController motorController;
@@ -46,10 +43,11 @@ private:
     int motorIN2;
     int motorEN;
     int servoPIN;
-    int ADC_Adr;
-    int ADC_fd;
+    int adcAddress;
     int laserPIN;
-    int displayPIN;
+    int displayAddress;
+
+    void setupComponents(int);
 };
 
 #endif //SORTERROBOT_SORTERROBOT_H

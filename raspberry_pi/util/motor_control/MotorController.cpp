@@ -16,12 +16,14 @@ void MotorController::setup() {
 }
 
 // Run the motor in either forward or backward direction based on the boolean direction
-void MotorController::run(bool direction) {
-    changeSpeed();
-    digitalWrite(in1, direction ? HIGH : LOW);
-    digitalWrite(in2, direction ? LOW : HIGH);
-    softPwmWrite(en, speed);
-    std::cout << (direction ? "Forward" : "Backward") << std::endl;
+void MotorController::run(bool direction) const {
+    if (in1 != -1 && in2 != -1 && en != -1) {
+        changeSpeed();
+        digitalWrite(in1, direction ? HIGH : LOW);
+        digitalWrite(in2, direction ? LOW : HIGH);
+        softPwmWrite(en, speed);
+        std::cout << (direction ? "Forward" : "Backward") << std::endl;
+    }
 }
 
 // Stop the motor
@@ -32,7 +34,7 @@ void MotorController::stop() {
 }
 
 // Change the PWM speed
-void MotorController::changeSpeed() {
+void MotorController::changeSpeed() const {
     softPwmWrite(en, speed);
     std::cout << "Speed changed to " << speed << "%" << std::endl;
 }

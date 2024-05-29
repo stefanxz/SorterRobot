@@ -16,18 +16,20 @@ ServoController::~ServoController() {
     pinMode(pin, INPUT); // Reset pin to input to stop signal
 }
 
-void ServoController::movePiston() {
-    std::cout << "Moving piston on pin" << " " << pin << std::endl;
-    pushPiston();
-    pullPiston();
+void ServoController::movePiston() const {
+    if (pin != -1) {
+        std::cout << "Moving piston on pin" << " " << pin << std::endl;
+        pushPiston();
+        pullPiston();
+    }
 }
 
-void ServoController::pushPiston() {
+void ServoController::pushPiston() const {
     softPwmWrite(pin, FORWARD); // Use defined FORWARD position
     usleep(time);
 }
 
-void ServoController::pullPiston() {
+void ServoController::pullPiston() const {
     softPwmWrite(pin, BACKWARD); // Use defined BACKWARD position
     usleep(time - 150000);
 }

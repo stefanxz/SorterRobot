@@ -11,7 +11,7 @@ ADCReader::~ADCReader() {
     // Close any connections or cleanup if necessary
 }
 
-void ADCReader::configureADC(int config) {
+void ADCReader::configureADC(int config) const{
     int msb = (config >> 8) & 0xFF;
     int lsb = config & 0xFF;
     int config_to_send = (lsb << 8) | msb;
@@ -20,11 +20,11 @@ void ADCReader::configureADC(int config) {
     }
 }
 
-void ADCReader::initADC(int config) {
-    configureADC(config);
+void ADCReader::initADC(int config) const{
+    if(adc_address != -1){configureADC(config);}
 }
 
-int ADCReader::readADCChannel(int channelConfig) {
+int ADCReader::readADCChannel(int channelConfig) const{
     initADC(channelConfig);
     usleep(9000); // Wait for conversion to complete
     int result = wiringPiI2CReadReg16(fd, 0x00);
@@ -32,7 +32,7 @@ int ADCReader::readADCChannel(int channelConfig) {
     return static_cast<int>(result * 0.125); // Scale to mV based on gain
 }
 
-void ADCReader::runContinuousRead() {
+void ADCReader::runContinuousRead() const{
     std::cout << "Starting ADC readings...\n";
     while (true) {
         int value = readADCChannel(0xC183);

@@ -4,7 +4,7 @@
 LaserReceiver::LaserReceiver(int pin) : pin(pin) {}
 
 void LaserReceiver::init() {
-    pinMode(pin, INPUT); // Set the specified pin to input mode
+    if (pin != -1) { pinMode(pin, INPUT); } // Set the specified pin to input mode
 }
 
 bool LaserReceiver::isLaserDetected() const {

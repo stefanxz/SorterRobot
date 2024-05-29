@@ -15,18 +15,18 @@
 
 using namespace std;
 
-int motorIN1;
-int motorIN2;
-int motorEN;
-int servoPIN;
-int ADC_Adr;
-int laserPIN;
-int displayPIN;
-int laserConfig;
+int motorIN1 = -1;
+int motorIN2 = -1;
+int motorEN = -1;
+int servoPIN = 11;
+int adcAddress = -1;
+int laserPIN = -1;
+int displayAddress = -1;
+int adcConfig = 0;
 
 int main() {
-
-    SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN,  ADC_Adr, laserPIN, displayPIN);
-    sorterRobot.system_init(laserConfig);
+    SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN, adcAddress, laserPIN, displayAddress);
+    sorterRobot.system_init(adcConfig = 0);
+    sorterRobot.getServoController().movePiston();
     return 0;
 }

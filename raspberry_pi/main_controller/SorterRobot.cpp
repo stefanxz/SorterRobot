@@ -2,42 +2,57 @@
 #include "SorterRobot.h"
 
 SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN,
-                         int servoPIN, int ADC_Adr, int laserPIN, int displayPIN)
+                         int servoPIN, int adcAddress, int laserPIN, int displayAddress)
         : motorController(motorIN1, motorIN2, motorEN), servoController(servoPIN),
-          adcReader(ADC_Adr), laserReceiver(laserPIN), displayController(displayPIN),
+          adcReader(adcAddress), laserReceiver(laserPIN), displayController(displayAddress),
           motorIN1(motorIN1), motorIN2(motorIN2), motorEN(motorEN),
-          servoPIN(servoPIN), ADC_Adr(ADC_Adr),
-          laserPIN(laserPIN), displayPIN(displayPIN) {
+          servoPIN(servoPIN), adcAddress(adcAddress),
+          laserPIN(laserPIN), displayAddress(displayAddress) {
 }
+
 
 void SorterRobot::system_init(int lightSensorConfig) {
-    wiringPiSetupPhys();
-    motorController.setup();
-    laserReceiver.init();
-    adcReader.initADC(lightSensorConfig);
-    displayController.displayInit();
+    if (wiringPiSetup() == -1) {
+        std::cerr << "Error setting up wiringPi\n";
+        return;
+    }
+
+    SorterRobot::setupComponents(lightSensorConfig);
 }
 
-void SorterRobot::clearDisplay() {
-    displayController.displayClear();
+
+MotorController SorterRobot::getMotorController() const {
+    return motorController;
 }
 
-void SorterRobot::displayString(const char *str) {
-    displayController.displayString(str);
+ServoController SorterRobot::getServoController() const {
+    return servoController;
 }
 
-void SorterRobot::movePiston() {
-    servoController.movePiston();
+ADCReader SorterRobot::getAdcReader() const {
+    return adcReader;
 }
 
-void SorterRobot::runConveyorBelt(bool direction) {
-    motorController.run(direction);
+LaserReceiver SorterRobot::getLaserReceiver() const {
+    return laserReceiver;
 }
 
-void SorterRobot::stopConveyorBelt() {
-    motorController.stop();
+DisplayController SorterRobot::getDisplayController() const {
+    return displayController;
 }
 
-bool SorterRobot::isLaserDetected() const {
-    return laserReceiver.isLaserDetected();
+void SorterRobot::setupComponents(int lightSensorConfig) {
+    if (motorIN1 != -1 && motorIN2 != -1 && motorEN != -1) {
+        motorController.setup();
+    }
+    if (laserPIN != -1) {
+        laserReceiver.init();
+    }
+    if (ADC_Adr != -1) {
+        adcReader.initADC(lightSensorConfig);
+    }
+    if (displayAddress != -1) {
+        displayController.displayInit();
+    }
 }
+

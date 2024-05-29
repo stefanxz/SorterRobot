@@ -14,11 +14,11 @@ public:
     explicit ServoController(int pin);  // Constructor
     ~ServoController();  // Destructor
 
-    void movePiston();  // Default time parameter
+    void movePiston() const;  // Default time parameter
 
 private:
-    void pushPiston();  // Push piston for specified time
-    void pullPiston();  // Pull piston for specified time
+    void pushPiston() const;  // Push piston for specified time
+    void pullPiston() const;  // Pull piston for specified time
 
     int pin;  // GPIO pin number
     int pwmMin, pwmMax;  // PWM range
