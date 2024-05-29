@@ -12,12 +12,8 @@
 #include <wiringPiI2C.h>
 #include <unistd.h>
 
-using namespace std;
-
 int main()
 {
-    ADCReader adc(0x48);
+    ADCReader adc;
     adc.runContinuousRead();
-
-    return 0;
 }

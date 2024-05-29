@@ -37,16 +37,20 @@ int ADCReader::readADCChannel(int channelConfig)
     usleep(9000); // Wait for conversion to complete
     int result = wiringPiI2CReadReg16(fd, 0x00);
     result = ((result & 0xFF) << 8) | ((result >> 8) & 0xFF); // Correct the byte order
-    return static_cast<int>(result * 0.125);                  // Scale to mV based on gain
+
+    // Adjusting the result interpretation based on actual ADC capabilities
+    // This line needs adjustment according to actual ADC resolution and the required sensitivity
+    return result; // Return raw ADC value to better understand the scale and needed adjustments
 }
 
 void ADCReader::runContinuousRead()
 {
     std::cout << "Starting ADC readings...\n";
+    int configValue = 0xC183; // Example configuration: Adjust according to actual needed setup
     while (true)
     {
-        int value = readADCChannel(0xC183);
-        std::cout << "ADC value: " << value << "mV\n";
-        usleep(1000000); // 1s delay
+        int value = readADCChannel(configValue);
+        std::cout << "ADC value: " << value << '\n'; // Changed to raw value for better calibration
+        usleep(1000000);                             // 1s delay
     }
 }
