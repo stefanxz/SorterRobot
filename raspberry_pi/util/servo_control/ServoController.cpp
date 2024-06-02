@@ -3,17 +3,17 @@
 //
 #include "ServoController.h"
 
-#define FORWARD 18   // Minimum effective PWM position
-#define BACKWARD 4 // Maximum effective PWM position
+#define FORWARD 18
+#define BACKWARD 4
 
 
-ServoController::ServoController(int pin) {
-    softPwmCreate(pin, 4, 24); // Setup PWM on the pin with adjusted range
+ServoController::ServoController(int pin) : pin(pin) {
+    std::cout << "Initializing ServoController with pin: " << pin << std::endl;
+    softPwmCreate(this->pin, 4, 24);
 }
-
 ServoController::~ServoController() {
-    softPwmStop(pin); // Stop PWM
-    pinMode(pin, INPUT); // Reset pin to input to stop signal
+    softPwmStop(pin);
+    pinMode(pin, INPUT);
 }
 
 void ServoController::movePiston() const {
@@ -25,11 +25,11 @@ void ServoController::movePiston() const {
 }
 
 void ServoController::pushPiston() const {
-    softPwmWrite(pin, FORWARD); // Use defined FORWARD position
+    softPwmWrite(pin, FORWARD);
     usleep(time);
 }
 
 void ServoController::pullPiston() const {
-    softPwmWrite(pin, BACKWARD); // Use defined BACKWARD position
+    softPwmWrite(pin, BACKWARD);
     usleep(time - 150000);
 }

@@ -15,6 +15,15 @@
 
 using namespace std;
 
+void system_init(int adcConfig) {
+    std::cout << "Starting system initialization." << std::endl;
+    if (wiringPiSetupPhys() == -1) {
+        std::cerr << "Error setting up wiringPi. Initialization failed." << std::endl;
+        return;
+    }
+    std::cout << "System init done!" <<  '\n';
+}
+
 int motorIN1 = -1;
 int motorIN2 = -1;
 int motorEN = -1;
@@ -25,8 +34,9 @@ int displayAddress = -1;
 int adcConfig = 0;
 
 int main() {
+    system_init(adcConfig);
     SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN, adcAddress, laserPIN, displayAddress);
-    sorterRobot.system_init(adcConfig = 0);
+    sorterRobot.robotSetup(adcConfig);
     sorterRobot.getServoController().movePiston();
     return 0;
 }

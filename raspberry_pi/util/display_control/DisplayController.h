@@ -11,7 +11,7 @@ private:
 
     void sendCmd(char cmd);
     int i2cAddress;
-    void sendData(char data);
+    void sendData(char data) const;
 
 public:
     explicit DisplayController(int);
