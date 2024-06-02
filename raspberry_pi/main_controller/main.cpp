@@ -12,14 +12,8 @@
 #include <wiringPiI2C.h>
 #include <unistd.h>
 
-using namespace std;
-
-
-
-int main() {
-
-    Servo servoController(11);
-    servoController.movePiston();
-
-    return 0;
+int main()
+{
+    ADCReader adc;
+    adc.runContinuousRead();
 }
