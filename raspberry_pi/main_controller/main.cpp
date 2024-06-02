@@ -42,15 +42,33 @@ int checkLaserDetection(LaserReceiver& laserReceiver) {
 }
 
 int main() {
-    LaserReceiver laserReceiver(16);  // Assuming the pin is 7
-    laserReceiver.init();
 
-    // Call the function to check laser detection
-    int result = checkLaserDetection(laserReceiver);
+    LaserReceiver receiverHeightFilter(16);  // Assuming the pin is 16
+    LaserReceiver receiverSlope(18);  // Assuming the pin is 18
+    LaserReceiver receiverEndConveyour(11); // Assuming the pin is 11
 
-    // Optionally use result for further logic
-    if (result == -1) { std::cout << "Object is stuck in filter"; }
-    else {std::cout << "Object passed through filter successfully"; } 
+    // Initialize the laser recievers
+    receiverHeightFilter.init();
+    receiverSlope.init();
+    receiverEndConveyor.init();
+
+    // Call the function to check laser detection for the height filter
+    int resultHeightFilter = checkLaserDetection(receiverHeightFilter);
+
+    if (resultHeightFilter == -1) { std::cout << "Object is stuck in filter"; }
+    else { std::cout << "Object passed through filter successfully"; } 
+
+    // Call the function to check laser detection for the slope
+    int resultSlope = checkLaserDetection(receiverSlope);
+
+    if (resultSlope == -1){ std::cout << "Object is stuck on the slope"; }
+    else { std::cout << "Object passed through slope successfully"; }
+
+    // Call the function to check if the object has reached the end of the conveyor belt
+    int resultEndConveyor = checkLaserDetection(receiverEndConveyour);
+
+    if (resultEndConveyor == -1) { std::cout << "Object is waiting at the end of the conveyor belt"; }
+    else { std::cout << "Something went wrong"; }
 
     return 0;
 }
