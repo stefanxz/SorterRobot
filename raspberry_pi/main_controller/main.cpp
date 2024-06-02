@@ -11,30 +11,46 @@
 
 using namespace std;
 
-int main() {
-    // Laser receiver setup
-    LaserReceiver laserReceiver(16);  // Assuming the pin is 16 for this example
-    laserReceiver.init();
-
-    const int noLaserDetectionThreshold = 4000; // Threshold for laser non-detection in milliseconds
-    const int runLaserLoopDelay = 1; // Delay in seconds for the laser detection Loop
-    int detectionTime = millis();  // Initialize detection time to current time
+// Function to check the laser detection status without outputting to the terminal
+int checkLaserDetection(LaserReceiver& laserReceiver) {
+    int detectionTime = 0;
+    const int stuckThreshold = 4000; // 4 seconds in milliseconds
 
     while (true) {
         if (!laserReceiver.isLaserDetected()) {
-            int currentTime = millis();
-            int elapsedTime = currentTime - detectionTime;
-            if (elapsedTime >= noLaserDetectionThreshold) {
-                cout << "Unfit object detected" << endl;
-                detectionTime = currentTime; // Reset detection time
+            if (detectionTime == 0) {  // Start timing when laser first not detected
+                detectionTime = millis();
+            } else {
+                int currentTime = millis();
+                int elapsedTime = currentTime - detectionTime;
+                if (elapsedTime >= stuckThreshold) {
+                    return -1;  // Object stuck more than 4 seconds
+                }
             }
         } else {
-            detectionTime = millis(); // Reset the timer when laser is detected
+            if (detectionTime != 0) {  // Laser was previously not detected
+                int currentTime = millis();
+                int elapsedTime = currentTime - detectionTime;
+                if (elapsedTime < stuckThreshold) {
+                    return 1;  // Object not stuck or stuck less than 4 seconds
+                }
+            }
+            detectionTime = 0;  // Reset detection time
         }
-        sleep(runLaserLoopDelay);  // Pause the loop for runLaserLoopDelay seconds before next check
+        usleep(100000);  // Check every 0.1 seconds
     }
+}
 
-    
+int main() {
+    LaserReceiver laserReceiver(16);  // Assuming the pin is 7
+    laserReceiver.init();
+
+    // Call the function to check laser detection
+    int result = checkLaserDetection(laserReceiver);
+
+    // Optionally use result for further logic
+    if (result == -1) { std::cout << "Object is stuck in filter"; }
+    else {std::cout << "Object passed through filter successfully"; } 
 
     return 0;
 }
