@@ -6,15 +6,16 @@ void ServerHandler::begin() {
   server.begin();
 }
 
-void ServerHandler::handleClient() {
+ServerHandler::Request ServerHandler::handleClient() {
   WiFiClient client = server.available();
-  if (!client) return;
+  if (!client) return Request::NONE;
 
   Serial.println("Client connected");
 
   String line, method, path, body;
   bool currentLineIsBlank = true;
   bool isPost = false;
+  ServerHandler::Request request;
 
   while (client.connected()) {
     if (client.available()) {
@@ -23,7 +24,7 @@ void ServerHandler::handleClient() {
         if (currentLineIsBlank && isPost) {
           // If it's a POST request and the headers are done, read the body
           body = client.readStringUntil('\n');
-          handlePostRequest(client, path, body);
+          request = handlePostRequest(client, path, body);
           break;
         }
         currentLineIsBlank = true;
@@ -43,27 +44,28 @@ void ServerHandler::handleClient() {
     }
   }
   if (method == "GET") {
-    handleGetRequest(client, path);
+    request = handleGetRequest(client, path);
   }
   client.stop();
+  return request;
 }
 
-void ServerHandler::handleGetRequest(WiFiClient &client, String &path) {
-  if (path == "/ ") {
-    serveHomePage(client);
+ServerHandler::Request ServerHandler::handleGetRequest(WiFiClient &client, String &path) {
+  if (path == "/") {
+    return serveHomePage(client);
   }
   // Other GET paths can be handled here later
 }
 
-void ServerHandler::handlePostRequest(WiFiClient &client, String &path, String &body) {
+ServerHandler::Request ServerHandler::handlePostRequest(WiFiClient &client, String &path, String &body) {
   Serial.println("Post request received.");
   if (path == "/drive") {
-    handleDriveRequest(client, body);
+    return handleDriveRequest(client, body);
   }
   // Other POST paths can be handled here later
 }
 
-void ServerHandler::serveHomePage(WiFiClient &client) {
+ServerHandler::Request ServerHandler::serveHomePage(WiFiClient &client) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-type: text/html");
   client.println("Connection: close");
@@ -75,9 +77,11 @@ void ServerHandler::serveHomePage(WiFiClient &client) {
   client.println("<input type=\"text\" name=\"gate\" placeholder=\"Enter gate number\">");
   client.println("<input type=\"submit\" value=\"Drive\">");
   client.println("</form></body></html>");
+
+  return Request::OTHER;
 }
 
-void ServerHandler::handleDriveRequest(WiFiClient &client, String &body) {
+ServerHandler::Request ServerHandler::handleDriveRequest(WiFiClient &client, String &body) {
   int startPos = body.indexOf("gate=") + 5;
   int endPos = body.indexOf('&', startPos);
   if (endPos == -1) endPos = body.length();
@@ -89,4 +93,6 @@ void ServerHandler::handleDriveRequest(WiFiClient &client, String &body) {
   client.println("Connection: close");
   client.println();
   client.println("Command received");
+
+  return Request::DRIVE;
 }

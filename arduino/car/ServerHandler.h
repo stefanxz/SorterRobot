@@ -6,19 +6,20 @@
 
 class ServerHandler {
 public:
+  enum Request {READY, DRIVE, OTHER, NONE};
+  
   ServerHandler(Car &car);
   void begin();
-  void handleClient();
-
+  Request handleClient();
 private:
   WiFiServer server;
   Car &car;
   
-  void serveHomePage(WiFiClient &client);
-  void handlePostRequest(WiFiClient &client, String &path, String &body);
-  void handleDriveRequest(WiFiClient &client, String &body);
-  void processRequest(WiFiClient &client, String &header);
-  void handleGetRequest(WiFiClient &client, String &path);
+  Request serveHomePage(WiFiClient &client);
+  Request handlePostRequest(WiFiClient &client, String &path, String &body);
+  Request handleDriveRequest(WiFiClient &client, String &body);
+  Request processRequest(WiFiClient &client, String &header);
+  Request handleGetRequest(WiFiClient &client, String &path);
 };
 
 #endif // ServerHandler_h
