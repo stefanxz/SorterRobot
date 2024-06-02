@@ -70,5 +70,23 @@ int main() {
     if (resultEndConveyor == -1) { std::cout << "Object is waiting at the end of the conveyor belt"; }
     else { std::cout << "Something went wrong"; }
 
+    // Initialize the laser transmitters for the three gates
+    LaserTransmitter laserGateWhite(29); // Assuming the pin is 29
+    LaserTransmitter laserGateBlack(31); //Assuming the pin is 31
+    LaserTransmitter laserGateOther(37); // Assuming the pin is 37
+
+    // Initialize the laser transmitters
+    laserGateWhite.init();
+    laserGateBlack.init();
+    laserGateOther.init();
+
+    // EXAMPLE CODE - Turn on the laser for the white gate 
+    int gate = 1;
+    if (gate == 1) {
+        laserGateWhite.turnOn();
+        laserGateBlack.turnOff();
+        laserGateOther.turnOff();
+    }
+
     return 0;
 }
