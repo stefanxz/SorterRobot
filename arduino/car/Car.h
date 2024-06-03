@@ -1,6 +1,8 @@
 #ifndef Car_h
 #define Car_h
 
+#include <Servo.h>
+
 class Car
 {
 public:
@@ -8,9 +10,11 @@ public:
   void driveForward(int milliseconds);  // Drive forward for a specified number of milliseconds
   void driveForward();
   void driveBackward(int milliseconds); // Drive backward for a specified number of milliseconds
+  void driveBackward();
   void driveToGate(int gate);           // Drive to a specific gate (implementation needed)
   void stopMotors();                    // Stops both motors
   void setSpeed(int newSpeed);          // Sets a new speed for the motors
+  void handleDropoff(Servo &servo);
 
   bool isReady();
 
@@ -26,7 +30,7 @@ private:
   const int motor2Pin2 = 11;
   const int motor2PWM = 12;
 
-  int speed = 75; // Default speed, mutable to change at runtime
+  int speed = 68; // Default speed, mutable to change at runtime
   bool ready = true;
 };
 
