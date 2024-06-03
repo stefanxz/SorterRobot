@@ -7,12 +7,9 @@
 class ServerHandler {
 public:
   ServerHandler(Car &car);
-  enum Request {DRIVE, READY, OTHER, NONE, ERROR};
-
-
   void begin();
-  Request handleClient();
-  Request handleIsReadyRequest(WiFiClient &client);
+  void handleClient();
+  void handleIsReadyRequest(WiFiClient &client);
 
   String trimString(String str) {
     if (str.length() == 0) return str;
@@ -31,7 +28,7 @@ public:
 
     if (end < start) return "";  // All spaces
     return str.substring(start, end + 1);
-  }
+}
 
 bool isSpace(char c) {
     return (c == ' ' || c == '\n' || c == '\r' || c == '\t');
@@ -41,11 +38,11 @@ private:
   WiFiServer server;
   Car &car;
   
-  Request serveHomePage(WiFiClient &client);
-  Request handlePostRequest(WiFiClient &client, String &path, String &body);
-  Request handleDriveRequest(WiFiClient &client, String &body);
-  Request processRequest(WiFiClient &client, String &header);
-  Request handleGetRequest(WiFiClient &client, String &path);
+  void serveHomePage(WiFiClient &client);
+  void handlePostRequest(WiFiClient &client, String &path, String &body);
+  void handleDriveRequest(WiFiClient &client, String &body);
+  void processRequest(WiFiClient &client, String &header);
+  void handleGetRequest(WiFiClient &client, String &path);
 };
 
 #endif // ServerHandler_h
