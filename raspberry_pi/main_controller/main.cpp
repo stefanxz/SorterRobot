@@ -11,68 +11,46 @@
 
 using namespace std;
 
-// Function to check the laser detection status without outputting to the terminal
-int checkLaserDetection(LaserReceiver& laserReceiver) {
-    int detectionTime = 0;
-    const int stuckThreshold = 4000; // 4 seconds in milliseconds
-
-    while (true) {
-        if (!laserReceiver.isLaserDetected()) {
-            if (detectionTime == 0) {  // Start timing when laser first not detected
-                detectionTime = millis();
-            } else {
-                int currentTime = millis();
-                int elapsedTime = currentTime - detectionTime;
-                if (elapsedTime >= stuckThreshold) {
-                    return -1;  // Object stuck more than 4 seconds
-                }
-            }
-        } else {
-            if (detectionTime != 0) {  // Laser was previously not detected
-                int currentTime = millis();
-                int elapsedTime = currentTime - detectionTime;
-                if (elapsedTime < stuckThreshold) {
-                    return 1;  // Object not stuck or stuck less than 4 seconds
-                }
-            }
-            detectionTime = 0;  // Reset detection time
-        }
-        usleep(100000);  // Check every 0.1 seconds
-    }
-}
-
 int main() {
 
     LaserReceiver receiverHeightFilter(16);  // Assuming the pin is 16
-    LaserReceiver receiverSlope(18);  // Assuming the pin is 18
-    LaserReceiver receiverEndConveyour(11); // Assuming the pin is 11
+    LaserReceiver receiverSlope(18);         // Assuming the pin is 18
+    LaserReceiver receiverEndConveyor(11);   // Assuming the pin is 11
 
-    // Initialize the laser recievers
+    // Initialize the laser receivers
     receiverHeightFilter.init();
     receiverSlope.init();
     receiverEndConveyor.init();
 
-    // Call the function to check laser detection for the height filter
-    int resultHeightFilter = checkLaserDetection(receiverHeightFilter);
+    int stuckThreshold = 4000;  // Common threshold for all receivers
 
-    if (resultHeightFilter == -1) { std::cout << "Object is stuck in filter"; }
-    else { std::cout << "Object passed through filter successfully"; } 
+    // Check laser detection for the height filter
+    int resultHeightFilter = checkLaserDetection(receiverHeightFilter, stuckThreshold);
+    if (resultHeightFilter == -1) {
+        cout << "Object is stuck in filter" << endl;
+    } else {
+        cout << "Object passed through filter successfully" << endl;
+    }
 
-    // Call the function to check laser detection for the slope
-    int resultSlope = checkLaserDetection(receiverSlope);
+    // Check laser detection for the slope
+    int resultSlope = checkLaserDetection(receiverSlope, stuckThreshold);
+    if (resultSlope == -1) {
+        cout << "Object is stuck on the slope" << endl;
+    } else {
+        cout << "Object passed through slope successfully" << endl;
+    }
 
-    if (resultSlope == -1){ std::cout << "Object is stuck on the slope"; }
-    else { std::cout << "Object passed through slope successfully"; }
-
-    // Call the function to check if the object has reached the end of the conveyor belt
-    int resultEndConveyor = checkLaserDetection(receiverEndConveyour);
-
-    if (resultEndConveyor == -1) { std::cout << "Object is waiting at the end of the conveyor belt"; }
-    else { std::cout << "Something went wrong"; }
+    // Check if the object has reached the end of the conveyor belt
+    int resultEndConveyor = checkLaserDetection(receiverEndConveyor, stuckThreshold);
+    if (resultEndConveyor == -1) {
+        cout << "Object is waiting at the end of the conveyor belt" << endl;
+    } else {
+        cout << "Something went wrong" << endl;
+    }
 
     // Initialize the laser transmitters for the three gates
     LaserTransmitter laserGateWhite(29); // Assuming the pin is 29
-    LaserTransmitter laserGateBlack(31); //Assuming the pin is 31
+    LaserTransmitter laserGateBlack(31); // Assuming the pin is 31
     LaserTransmitter laserGateOther(37); // Assuming the pin is 37
 
     // Initialize the laser transmitters
