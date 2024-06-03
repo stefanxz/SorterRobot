@@ -8,6 +8,7 @@ public:
     explicit LaserReceiver(int pin);
     void init();
     bool isLaserDetected() const;
+    int checkLaserDetection(int stuckThreshold);  // Added function with threshold parameter
 
 private:
     int pin;
