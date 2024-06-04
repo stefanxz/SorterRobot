@@ -19,6 +19,7 @@ public:
 private:
     void pushPiston() const;  // Push piston for specified time
     void pullPiston() const;  // Pull piston for specified time
+    void pausePiston() const;
 
     int pin;  // GPIO pin number
     int pwmMin, pwmMax;  // PWM range
