@@ -2,13 +2,14 @@
 #define ADCREADER_H
 
 #include <iostream>
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
-#include <unistd.h>
+#include <unistd.h>      // For usleep
+#include <wiringPiI2C.h> // For I2C communication
+#include <wiringPi.h>    // For WiringPi setup
 
-class ADCReader {
+class ADCReader
+{
 public:
-    explicit ADCReader(int address);
+    explicit ADCReader(int address = 0x48);
     ~ADCReader();
     void initADC(int config) const;
     int readADCChannel(int channelConfig) const;

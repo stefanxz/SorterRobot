@@ -13,17 +13,6 @@
 #include <wiringPiI2C.h>
 #include <unistd.h>
 
-using namespace std;
-
-void system_init(int adcConfig) {
-    std::cout << "Starting system initialization." << std::endl;
-    if (wiringPiSetupPhys() == -1) {
-        std::cerr << "Error setting up wiringPi. Initialization failed." << std::endl;
-        return;
-    }
-    std::cout << "System init done!" <<  '\n';
-}
-
 int motorIN1 = -1;
 int motorIN2 = -1;
 int motorEN = -1;
