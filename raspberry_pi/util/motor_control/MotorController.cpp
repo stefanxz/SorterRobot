@@ -18,6 +18,7 @@ void MotorController::setup() {
 // Run the motor in either forward or backward direction based on the boolean direction
 void MotorController::run(bool direction) const {
     if (in1 != -1 && in2 != -1 && en != -1) {
+        std::cout << "Initialized conveyor belt";
         changeSpeed();
         digitalWrite(in1, direction ? HIGH : LOW);
         digitalWrite(in2, direction ? LOW : HIGH);

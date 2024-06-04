@@ -13,10 +13,21 @@
 #include <wiringPiI2C.h>
 #include <unistd.h>
 
-int motorIN1 = -1;
-int motorIN2 = -1;
-int motorEN = -1;
-int servoPIN = 11;
+using namespace std;
+
+void system_init(int adcConfig) {
+    std::cout << "Starting system initialization." << std::endl;
+    if (wiringPiSetupPhys() == -1) {
+        std::cerr << "Error setting up wiringPi. Initialization failed." << std::endl;
+        return;
+    }
+    std::cout << "System init done!" <<  '\n';
+}
+
+int motorIN1 = 13;
+int motorIN2 = 15;
+int motorEN = 11;
+int servoPIN = -1;
 int adcAddress = -1;
 int laserPIN = -1;
 int displayAddress = -1;
@@ -25,7 +36,9 @@ int adcConfig = 0;
 int main() {
     system_init(adcConfig);
     SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN, adcAddress, laserPIN, displayAddress);
-    sorterRobot.robotSetup(adcConfig);
-    sorterRobot.getServoController().movePiston();
+    while(true){
+        sorterRobot.getMotorController().run(true);
+    }
+
     return 0;
 }
