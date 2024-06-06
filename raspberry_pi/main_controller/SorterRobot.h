@@ -14,11 +14,15 @@
 #include "../util/motor_control/MotorController.h"
 #include "../util/servo_control/ServoController.h"
 #include "../util/laser_sensor/LaserReceiver.h"
+#include "../util/laser_transmitter/LaserTransmitter.h"
 
 class SorterRobot {
 public:
     SorterRobot(int motorIN1, int motorIN2, int motorEN,
-                int servoPIN, int adcAddress, int laserPIN, int displayAddress);
+                int servoPIN, int adcAddress, int displayAddress, int laserReceiverHeightPIN,
+                int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN, int laserTransmitterBlackPIN,
+                int laserTransmitterWhitePIN, int laserTransmitterColorPIN
+    );
 
     MotorController &getMotorController();
 
@@ -26,11 +30,19 @@ public:
 
     ADCReader &getAdcReader();
 
-    LaserReceiver &getLaserReceiver();
-
     DisplayController &getDisplayController();
 
-    void movePiston();
+    LaserReceiver &getLaserReceiverHeight();
+
+    LaserReceiver &getLaserReceiverWidth();
+
+    LaserReceiver &getLaserReceiverCarDetection();
+
+    LaserTransmitter &getLaserTransmitterBlack();
+
+    LaserTransmitter &getLaserTransmitterWhite();
+
+    LaserTransmitter &getLaserTransmitterColor();
 
     void robotSetup(int adcConfig);
 
@@ -38,16 +50,26 @@ private:
     MotorController motorController;
     ServoController servoController;
     ADCReader adcReader;
-    LaserReceiver laserReceiver;
     DisplayController displayController;
+    LaserReceiver laserReceiverHeight;
+    LaserReceiver laserReceiverWidth;
+    LaserReceiver laserReceiverCarDetection;
+    LaserTransmitter laserTransmitterBlack;
+    LaserTransmitter laserTransmitterWhite;
+    LaserTransmitter laserTransmitterColor;
 
     int motorIN1;
     int motorIN2;
     int motorEN;
     int servoPIN;
     int adcAddress;
-    int laserPIN;
     int displayAddress;
+    int laserReceiverHeightPIN;
+    int laserReceiverWidthPIN;
+    int laserReceiverCarDetectionPIN;
+    int laserTransmitterBlackPIN;
+    int laserTransmitterWhitePIN;
+    int laserTransmitterColorPIN;
 
 };
 
