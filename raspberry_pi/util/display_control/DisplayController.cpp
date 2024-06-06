@@ -4,15 +4,16 @@
 #include "DisplayController.h"
 
 DisplayController::DisplayController(int i2cAddress) {
-    wiringPiSetup();  // Initialize wiringPi
-    fd = wiringPiI2CSetup(i2cAddress);
+    if (i2cAddress != -1) {
+        fd = wiringPiI2CSetup(i2cAddress);
 
-    if (fd == -1) {
-        std::cerr << "Failed to initialize I2C communication.\n";
-        throw std::runtime_error("I2C Setup failed");
+        if (fd == -1) {
+            std::cerr << "Failed to initialize I2C communication.\n";
+            throw std::runtime_error("I2C Setup failed");
+        }
+
+        displayInit();  // Initialize the display
     }
-
-    displayInit();  // Initialize the display
 }
 
 void DisplayController::displayInit() {
@@ -29,7 +30,7 @@ void DisplayController::displayClear() {
     delay(2000);    // Delay for clearing to complete
 }
 
-void DisplayController::displayString(const char *str) {
+void DisplayController::displayString(const char *str) const {
     while (*str) sendData(*str++);
 }
 
@@ -45,7 +46,7 @@ void DisplayController::sendCmd(char cmd) {
     delay(2);  // Wait for the command to execute
 }
 
-void DisplayController::sendData(char data) {
+void DisplayController::sendData(char data) const {
     char data_u = data & 0xF0;         // Upper nibble
     char data_l = (data << 4) & 0xF0;  // Lower nibble
 

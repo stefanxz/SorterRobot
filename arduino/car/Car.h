@@ -12,6 +12,8 @@ public:
   void stopMotors();                    // Stops both motors
   void setSpeed(int newSpeed);          // Sets a new speed for the motors
 
+  bool isReady();
+
 private:
   void setupMotors(); // Setup motor pins as outputs
 
@@ -25,6 +27,7 @@ private:
   const int motor2PWM = 12;
 
   int speed = 75; // Default speed, mutable to change at runtime
+  bool ready = true;
 };
 
 #endif

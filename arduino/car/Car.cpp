@@ -16,7 +16,6 @@ void Car::setupMotors()
     pinMode(motor2Pin2, OUTPUT);
     pinMode(motor2PWM, OUTPUT);
 }
-
 void Car::driveForward(int milliseconds)
 {
     digitalWrite(motor1Pin1, HIGH);
@@ -28,9 +27,9 @@ void Car::driveForward(int milliseconds)
     analogWrite(motor2PWM, speed);
 
     delay(milliseconds);
+    delay(milliseconds);
     stopMotors();
 }
-
 void Car::driveBackward(int milliseconds)
 {
     digitalWrite(motor1Pin1, LOW);
@@ -40,14 +39,16 @@ void Car::driveBackward(int milliseconds)
     digitalWrite(motor2Pin1, LOW);
     digitalWrite(motor2Pin2, HIGH);
     analogWrite(motor2PWM, speed);
+    analogWrite(motor2PWM, speed);
 
+    delay(milliseconds);
     delay(milliseconds);
     stopMotors();
 }
 
 void Car::driveToGate(int gate)
 {
-    // Implementation to be defined by you
+    driveForward(1000);
 }
 
 void Car::stopMotors()
@@ -67,4 +68,9 @@ void Car::setSpeed(int newSpeed)
     {
         speed = newSpeed; // Update the speed variable
     }
+}
+
+bool Car::isReady()
+{
+    return ready;
 }
