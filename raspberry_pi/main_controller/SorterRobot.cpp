@@ -21,10 +21,10 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, 
     std::cout << "MotorController initiated with IN1: " << motorIN1 << ", IN2: " << motorIN2 << ", EN: " << motorEN
               << std::endl;
     std::cout << "ServoController initiated with servoPIN: " << servoPIN << std::endl;
-    std::cout << "ADCReader initiated with adcAddress: " << std::hex << adcAddress << std::endl;
-    std::cout << "DisplayController initiated with displayAddress: " << std::hex << displayAddress << std::endl;
-    std::cout << "LaserReceiverHeight initiated with laserReceiverHeightPIN: " << laserReceiverHeightPIN << std::endl;
-    std::cout << "LaserReceiverWidth initiated with laserReceiverWidthPIN: " << laserReceiverWidthPIN << std::endl;
+    std::cout << "ADCReader initiated with adcAddress: " << adcAddress << std::endl;
+    std::cout << "DisplayController initiated with displayAddress: " << displayAddress << std::endl;
+    std::cout << "LaserReceiverHeight initiated with laserReceiverHeightPIN: " << std::endl;
+    std::cout << "LaserReceiverWidth initiated with laserReceiverWidthPIN: " << std::endl;
     std::cout << "LaserReceiverCarDetection initiated with laserReceiverCarDetectionPIN: "
               << laserReceiverCarDetectionPIN << std::endl;
     std::cout << "LaserTransmitterBlack initiated with laserTransmitterBlackPIN: " << laserTransmitterBlackPIN

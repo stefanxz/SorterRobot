@@ -25,9 +25,9 @@ void system_init(int adcConfig) {
     std::cout << "System init done!" << '\n';
 }
 
-int motorIN1 = -1;
-int motorIN2 = -1;
-int motorEN = -1;
+int motorIN1 = 13;
+int motorIN2 = 15;
+int motorEN = 11;
 int servoPIN = -1;
 int adcAddress = -1;
 int displayAddress = -1;
@@ -45,5 +45,6 @@ int main() {
                             laserReceiverWidthPIN, laserReceiverCarDetectionPIN, laserTransmitterBlackPIN,
                             laserTransmitterWhitePIN, laserTransmitterColorPIN);
     sorterRobot.robotSetup(adcConfig);
+    while(true) { sorterRobot.getMotorController().run(true); }
     return 0;
 }

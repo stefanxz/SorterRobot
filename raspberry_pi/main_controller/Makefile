@@ -10,7 +10,7 @@ LIGHT_SENSOR_DIR = $(UTIL_DIR)/light_sensor
 MOTOR_CONTROL_DIR = $(UTIL_DIR)/motor_control
 SERVO_CONTROL_DIR = $(UTIL_DIR)/servo_control
 LASER_SENSOR_DIR = $(UTIL_DIR)/laser_sensor
-LASER_TRANSMITTER_DIR = $(UTIL_DIR)/laser_transmitter  # Added directory for laser transmitter
+LASER_TRANSMITTER_DIR = $(UTIL_DIR)/laser_transmitter
 
 # Define all object files.
 OBJ = main.o \
@@ -66,7 +66,6 @@ LaserReceiver.o: $(LASER_SENSOR_DIR)/LaserReceiver.cpp $(LASER_SENSOR_DIR)/Laser
 	@echo "Compiling LaserReceiver.o..."
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-# Laser Transmitter
 LaserTransmitter.o: $(LASER_TRANSMITTER_DIR)/LaserTransmitter.cpp $(LASER_TRANSMITTER_DIR)/LaserTransmitter.h
 	@echo "Compiling LaserTransmitter.o..."
 	$(CC) -c $< -o $@ $(CFLAGS)
