@@ -40,3 +40,5 @@ int LaserReceiver::checkLaserDetection(int stuckThreshold) {
         usleep(100000);  // Check every 0.1 seconds
     }
 }
+
+
