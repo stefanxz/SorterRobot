@@ -1,6 +1,3 @@
-//
-// Created by Stefan on 24.05.2024.
-//
 #include <iostream>
 #include "../util/display_control/DisplayController.h"
 #include "../util/light_sensor/ADCReader.h"
@@ -39,6 +36,5 @@ int main() {
     while(true){
         sorterRobot.getMotorController().run(true);
     }
-
     return 0;
 }
