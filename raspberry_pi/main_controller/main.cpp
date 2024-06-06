@@ -36,9 +36,6 @@ int adcConfig = 0;
 int main() {
     system_init(adcConfig);
     SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN, adcAddress, laserPIN, displayAddress);
-    while(true){
-        sorterRobot.getMotorController().run(true);
-    }
-
+    sorterRobot.robotSetup(adcConfig);
     return 0;
 }

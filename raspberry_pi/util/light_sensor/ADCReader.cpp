@@ -15,9 +15,6 @@ ADCReader::~ADCReader()
     // Close any connections or cleanup if necessary
 }
 
-int ADCReader::readADCChannel(int channelConfig)
-{
-
 void ADCReader::configureADC(int config) const {
     if (config != 0) {
         int msb = (config >> 8) & 0xFF;

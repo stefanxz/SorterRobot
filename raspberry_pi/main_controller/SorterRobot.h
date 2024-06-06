@@ -32,7 +32,7 @@ public:
 
     void movePiston();
 
-    void robotSetup(int);
+    void robotSetup(int adcConfig);
 
 private:
     MotorController motorController;

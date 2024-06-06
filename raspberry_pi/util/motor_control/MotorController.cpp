@@ -15,15 +15,11 @@ void MotorController::setup() {
     softPwmCreate(en, 0, 100); // Setup PWM using wiringPi PWM
 }
 
-// Run the motor in either forward or backward direction based on the boolean direction
 void MotorController::run(bool direction) const {
     if (in1 != -1 && in2 != -1 && en != -1) {
-        std::cout << "Initialized conveyor belt";
-        changeSpeed();
         digitalWrite(in1, direction ? HIGH : LOW);
         digitalWrite(in2, direction ? LOW : HIGH);
         softPwmWrite(en, speed);
-        std::cout << (direction ? "Forward" : "Backward") << std::endl;
     }
 }
 
