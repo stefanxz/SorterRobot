@@ -26,7 +26,7 @@ int motorIN2 = 15;
 int motorEN = 11;
 int servoPIN = -1;
 int adcAddress = -1;
-int laserPIN = -1;
+int laserPIN = 16;
 int displayAddress = -1;
 int adcConfig = 0;
 
@@ -35,6 +35,15 @@ int main() {
     SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN, adcAddress, laserPIN, displayAddress);
     while(true){
         sorterRobot.getMotorController().run(true);
+    }
+    while (true){
+        if (sorterRobot.getLaserReceiver().checkLaserDetection(4000) == -1){
+            std::cout << "Object is stuck!" << std::endl;
+        }
+        else{
+            std::cout << "Object passed through!"<< std::endl;
+        }
+        usleep(100000); // Sleep for 0.1 seconds before checking again
     }
     return 0;
 }
