@@ -56,6 +56,16 @@ int main() {
     bool colorSensingInProgress = false;
     bool startConveyor = true;
 
+	unsigned long pistonActionTime = 0;
+    const unsigned long pistonTime = 1500; // 1.5 seconds in milliseconds
+    enum PistonState {
+        PUSHING,
+        PULLING,
+        STOPPING,
+        IDLE
+    };
+    PistonState pistonState = IDLE;
+
     while (true) {
         unsigned long currentTime = millis();
         /**
@@ -122,13 +132,27 @@ int main() {
         }
         **/
 
-        if (startConveyor) {
-            sorterRobot.getServoController().movePiston();
 
-            // Check if the piston has returned to the idle state
-            if (sorterRobot.getServoController().getState() == IDLE) {
-                // The piston has completed its movement, so we can reset the conveyor flag
-                startConveyor = false;
+        if (currentTime >= pistonActionTime) {
+            switch (pistonState) {
+                case IDLE:
+                    sorterRobot.getServoController().pushPiston();
+                    pistonState = PUSHING;
+                    pistonActionTime = currentTime + pistonTime;
+                    break;
+                case PUSHING:
+                    sorterRobot.getServoController().pullPiston();
+                    pistonState = PULLING;
+                    pistonActionTime = currentTime + pistonTime;
+                    break;
+                case PULLING:
+                    sorterRobot.getServoController().stopPiston();
+                    pistonState = STOPPING;
+                    pistonActionTime = currentTime + pistonTime;
+                    break;
+                case STOPPING:
+                    pistonState = IDLE;
+                    break;
             }
         }
 
