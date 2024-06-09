@@ -19,40 +19,41 @@ ServoController::~ServoController() {
     pinMode(pin, INPUT);
 }
 
-void ServoController::movePiston() const {
-    if (pin != -1) {
-        std::cout << "Moving piston on pin" << " " << pin << std::endl;
-        pushPiston();
-        pullPiston();
-        pausePiston();
+void ServoController::movePiston() {
+    unsigned long currentTime = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+
+    if (currentTime >= nextActionTime) {
+        switch (state) {
+            case IDLE:
+                pushPiston();
+                state = PUSHING;
+                nextActionTime = currentTime + time;
+                break;
+            case PUSHING:
+                pullPiston();
+                state = PULLING;
+                nextActionTime = currentTime + time;
+                break;
+            case PULLING:
+                pausePiston();
+                state = PAUSING;
+                nextActionTime = currentTime + time;
+                break;
+            case PAUSING:
+                state = IDLE;
+                break;
+        }
     }
 }
 
-
-
-void ServoController::pushPiston() const {
+void ServoController::pushPiston() {
     softPwmWrite(pin, FORWARD);
-    auto start = std::chrono::high_resolution_clock::now();
-    auto end = start + std::chrono::microseconds(time);
-
-    while (std::chrono::high_resolution_clock::now() < end) {
-    }
 }
 
-void ServoController::pullPiston() const {
+void ServoController::pullPiston() {
     softPwmWrite(pin, BACKWARD);
-    auto start = std::chrono::high_resolution_clock::now();
-    auto end = start + std::chrono::microseconds(time);
-
-    while (std::chrono::high_resolution_clock::now() < end) {
-    }
 }
 
-void ServoController::pausePiston() const {
+void ServoController::pausePiston() {
     softPwmWrite(pin, PAUSE);
-    auto start = std::chrono::high_resolution_clock::now();
-    auto end = start + std::chrono::microseconds(time);
-
-    while (std::chrono::high_resolution_clock::now() < end) {
-    }
 }

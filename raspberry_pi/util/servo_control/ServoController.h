@@ -9,21 +9,28 @@
 // Define the default piston time
 #define PISTONTIME 1500000
 
+enum ServoState {
+    PUSHING,
+    PULLING,
+    PAUSING,
+    IDLE
+};
+
 class ServoController {
 public:
-    explicit ServoController(int pin);  // Constructor
-    ~ServoController();  // Destructor
+    ServoController(int pin);
+    ~ServoController();
 
-    void movePiston() const;  // Default time parameter
+    void movePiston();
+    void pushPiston();
+    void pullPiston();
+    void pausePiston();
 
 private:
-    void pushPiston() const;  // Push piston for specified time
-    void pullPiston() const;  // Pull piston for specified time
-    void pausePiston() const;
-
-    int pin;  // GPIO pin number
-    int pwmMin, pwmMax;  // PWM range
-    int time = PISTONTIME;
+    int pin;
+    ServoState state = IDLE;
+    unsigned long nextActionTime = 0;
+    unsigned long time = PISTON_TIME; // 1 second in microseconds
 };
 
 #endif // SERVO_H
