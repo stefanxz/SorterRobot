@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 // Define the default piston time
-#define PISTONTIME 1500000
+#define PISTON_TIME 1500000
 
 enum ServoState {
     PUSHING,
