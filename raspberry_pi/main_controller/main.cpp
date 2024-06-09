@@ -31,7 +31,7 @@ int motorEN = 11;
 int servoPIN = -1;
 int adcAddress = -1;
 int displayAddress = -1;
-int laserReceiverHeightPIN = -1;
+int laserReceiverHeightPIN = 36;
 int laserReceiverWidthPIN = -1;
 int laserReceiverCarDetectionPIN = -1;
 int laserTransmitterBlackPIN = -1;
@@ -45,6 +45,7 @@ int main() {
                             laserReceiverWidthPIN, laserReceiverCarDetectionPIN, laserTransmitterBlackPIN,
                             laserTransmitterWhitePIN, laserTransmitterColorPIN);
     sorterRobot.robotSetup(adcConfig);
-    while(true) { sorterRobot.getMotorController().run(true); }
+    int result = sorterRobot.getLaserReceiverHeight().checkLaserDetection(1000);
+    std::cout << "Laser detection result: " << result << std::endl;
     return 0;
 }
