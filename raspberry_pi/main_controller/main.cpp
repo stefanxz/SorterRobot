@@ -16,7 +16,7 @@
 
 using namespace std;
 
-void system_init(int adcConfig) {
+void system_init() {
     std::cout << "Starting system initialization." << std::endl;
     if (wiringPiSetupPhys() == -1) {
         std::cerr << "Error setting up wiringPi. Initialization failed." << std::endl;
@@ -40,7 +40,7 @@ int laserTransmitterColorPIN = -1;
 int adcConfig = 0;
 
 int main() {
-    system_init(adcConfig);
+    system_init();
     SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN, adcAddress, displayAddress, laserReceiverHeightPIN,
                             laserReceiverWidthPIN, laserReceiverCarDetectionPIN, laserTransmitterBlackPIN,
                             laserTransmitterWhitePIN, laserTransmitterColorPIN);
