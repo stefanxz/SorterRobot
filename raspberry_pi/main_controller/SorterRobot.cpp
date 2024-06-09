@@ -33,6 +33,7 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, 
               << std::endl;
     std::cout << "LaserTransmitterColor initiated with laserTransmitterColorPIN: " << laserTransmitterColorPIN
               << std::endl;
+    disksInTube = 0;
 }
 
 
@@ -74,6 +75,20 @@ LaserTransmitter &SorterRobot::getLaserTransmitterWhite() {
 
 LaserTransmitter &SorterRobot::getLaserTransmitterColor() {
     return laserTransmitterColor;
+}
+
+void SorterRobot::incrementDisksInTube() {
+    disksInTube++;
+}
+
+void SorterRobot::decrementDisksInTube() {
+    if (disksInTube > 0) {
+        disksInTube--;
+    }
+}
+
+int SorterRobot::getDisksInTube() const {
+    return disksInTube;
 }
 
 

@@ -44,6 +44,12 @@ public:
 
     LaserTransmitter &getLaserTransmitterColor();
 
+	void incrementDisksInTube();
+
+    void decrementDisksInTube();
+
+    int getDisksInTube() const;
+
     void robotSetup(int adcConfig);
 
 private:
@@ -70,6 +76,7 @@ private:
     int laserTransmitterBlackPIN;
     int laserTransmitterWhitePIN;
     int laserTransmitterColorPIN;
+    int disksInTube;
 
 };
 
