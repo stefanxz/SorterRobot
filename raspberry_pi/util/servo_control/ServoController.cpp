@@ -57,3 +57,7 @@ void ServoController::pullPiston() {
 void ServoController::pausePiston() {
     softPwmWrite(pin, PAUSE);
 }
+
+ServoState ServoController::getState() const {
+    return state;
+}

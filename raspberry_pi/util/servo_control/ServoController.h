@@ -25,7 +25,7 @@ public:
     void pushPiston();
     void pullPiston();
     void pausePiston();
-
+	ServoState getState() const;
 private:
     int pin;
     ServoState state = IDLE;
