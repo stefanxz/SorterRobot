@@ -1,10 +1,11 @@
-
 #include "SorterRobot.h"
-
+#include <iostream>
+#include <sstream>
 
 SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, int adcAddress, int displayAddress,
                          int laserReceiverHeightPIN, int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN,
-                         int laserTransmitterBlackPIN, int laserTransmitterWhitePIN, int laserTransmitterColorPIN)
+                         int laserTransmitterBlackPIN, int laserTransmitterWhitePIN, int laserTransmitterColorPIN,
+                         const std::string& carControllerBaseUrl)
         : motorIN1(motorIN1), motorIN2(motorIN2), motorEN(motorEN),
           servoPIN(servoPIN), adcAddress(adcAddress),
           laserReceiverHeightPIN(laserReceiverHeightPIN), laserReceiverWidthPIN(laserReceiverWidthPIN),
@@ -17,79 +18,26 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, 
           displayController(displayAddress),
           laserReceiverHeight(laserReceiverHeightPIN), laserReceiverWidth(laserReceiverWidthPIN),
           laserReceiverCarDetection(laserReceiverCarDetectionPIN), laserTransmitterBlack(laserTransmitterBlackPIN),
-          laserTransmitterWhite(laserTransmitterWhitePIN), laserTransmitterColor(laserTransmitterColorPIN) {
-    std::cout << "MotorController initiated with IN1: " << motorIN1 << ", IN2: " << motorIN2 << ", EN: " << motorEN
-              << std::endl;
-    std::cout << "ServoController initiated with servoPIN: " << servoPIN << std::endl;
-    std::cout << "ADCReader initiated with adcAddress: " << adcAddress << std::endl;
-    std::cout << "DisplayController initiated with displayAddress: " << displayAddress << std::endl;
-    std::cout << "LaserReceiverHeight initiated with laserReceiverHeightPIN: " << std::endl;
-    std::cout << "LaserReceiverWidth initiated with laserReceiverWidthPIN: " << std::endl;
-    std::cout << "LaserReceiverCarDetection initiated with laserReceiverCarDetectionPIN: "
-              << laserReceiverCarDetectionPIN << std::endl;
-    std::cout << "LaserTransmitterBlack initiated with laserTransmitterBlackPIN: " << laserTransmitterBlackPIN
-              << std::endl;
-    std::cout << "LaserTransmitterWhite initiated with laserTransmitterWhitePIN: " << laserTransmitterWhitePIN
-              << std::endl;
-    std::cout << "LaserTransmitterColor initiated with laserTransmitterColorPIN: " << laserTransmitterColorPIN
-              << std::endl;
-    disksInTube = 0;
+          laserTransmitterWhite(laserTransmitterWhitePIN), laserTransmitterColor(laserTransmitterColorPIN),
+          carController(carControllerBaseUrl) {
+    // Initialization debug messages...
 }
 
+MotorController &SorterRobot::getMotorController() { return motorController; }
+ServoController &SorterRobot::getServoController() { return servoController; }
+ADCReader &SorterRobot::getAdcReader() { return adcReader; }
+DisplayController &SorterRobot::getDisplayController() { return displayController; }
+LaserReceiver &SorterRobot::getLaserReceiverCarDetection() { return laserReceiverCarDetection; }
+LaserReceiver &SorterRobot::getLaserReceiverWidth() { return laserReceiverWidth; }
+LaserReceiver &SorterRobot::getLaserReceiverHeight() { return laserReceiverHeight; }
+LaserTransmitter &SorterRobot::getLaserTransmitterBlack() { return laserTransmitterBlack; }
+LaserTransmitter &SorterRobot::getLaserTransmitterWhite() { return laserTransmitterWhite; }
+LaserTransmitter &SorterRobot::getLaserTransmitterColor() { return laserTransmitterColor; }
+CarController &SorterRobot::getCarController() { return carController; }
 
-MotorController &SorterRobot::getMotorController() {
-    return motorController;
-}
-
-ServoController &SorterRobot::getServoController() {
-    return servoController;
-}
-
-ADCReader &SorterRobot::getAdcReader() {
-    return adcReader;
-}
-
-DisplayController &SorterRobot::getDisplayController() {
-    return displayController;
-}
-
-LaserReceiver &SorterRobot::getLaserReceiverCarDetection() {
-    return laserReceiverCarDetection;
-}
-
-LaserReceiver &SorterRobot::getLaserReceiverWidth() {
-    return laserReceiverWidth;
-}
-
-LaserReceiver &SorterRobot::getLaserReceiverHeight() {
-    return laserReceiverHeight;
-}
-
-LaserTransmitter &SorterRobot::getLaserTransmitterBlack() {
-    return laserTransmitterBlack;
-}
-
-LaserTransmitter &SorterRobot::getLaserTransmitterWhite() {
-    return laserTransmitterWhite;
-}
-
-LaserTransmitter &SorterRobot::getLaserTransmitterColor() {
-    return laserTransmitterColor;
-}
-
-void SorterRobot::incrementDisksInTube() {
-    disksInTube++;
-}
-
-void SorterRobot::decrementDisksInTube() {
-    if (disksInTube > 0) {
-        disksInTube--;
-    }
-}
-
-int SorterRobot::getDisksInTube() const {
-    return disksInTube;
-}
+void SorterRobot::incrementDisksInTube() { disksInTube++; }
+void SorterRobot::decrementDisksInTube() { if (disksInTube > 0) disksInTube--; }
+int SorterRobot::getDisksInTube() const { return disksInTube; }
 
 
 void SorterRobot::robotSetup(int adcConfig) {
@@ -138,9 +86,3 @@ void SorterRobot::robotSetup(int adcConfig) {
     std::cout << "Robot setup complete." << '\n';
 
 }
-
-
-
-
-
-

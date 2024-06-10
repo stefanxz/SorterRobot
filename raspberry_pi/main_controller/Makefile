@@ -1,10 +1,11 @@
 # Compiler settings - Can be customized.
 CC = g++
-CFLAGS = -I../../util -lwiringPi
+CFLAGS = -I../../util -I../network -lwiringPi
 
 # Define the directories relative to the Makefile location.
 SRC_DIR = .
 UTIL_DIR = ../util
+NETWORK_DIR = ../network
 DISPLAY_DIR = $(UTIL_DIR)/display_control
 LIGHT_SENSOR_DIR = $(UTIL_DIR)/light_sensor
 MOTOR_CONTROL_DIR = $(UTIL_DIR)/motor_control
@@ -20,7 +21,8 @@ OBJ = main.o \
       MotorController.o \
       Servo.o \
       LaserReceiver.o \
-      LaserTransmitter.o
+      LaserTransmitter.o \
+      CarController.o
 
 # The build target executable:
 TARGET = main
@@ -29,10 +31,10 @@ all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	@echo "Linking..."
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) -lcurl
 
 # Main file
-main.o: $(SRC_DIR)/main.cpp $(SRC_DIR)/SorterRobot.h $(SERVO_CONTROL_DIR)/ServoController.h
+main.o: $(SRC_DIR)/main.cpp $(SRC_DIR)/SorterRobot.h $(SERVO_CONTROL_DIR)/ServoController.h $(NETWORK_DIR)/CarController.h
 	@echo "Compiling main.o..."
 	$(CC) -c $< -o $@ $(CFLAGS)
 
@@ -66,8 +68,14 @@ LaserReceiver.o: $(LASER_SENSOR_DIR)/LaserReceiver.cpp $(LASER_SENSOR_DIR)/Laser
 	@echo "Compiling LaserReceiver.o..."
 	$(CC) -c $< -o $@ $(CFLAGS)
 
+# Laser Transmitter
 LaserTransmitter.o: $(LASER_TRANSMITTER_DIR)/LaserTransmitter.cpp $(LASER_TRANSMITTER_DIR)/LaserTransmitter.h
 	@echo "Compiling LaserTransmitter.o..."
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+# CarController
+CarController.o: $(NETWORK_DIR)/CarController.cpp $(NETWORK_DIR)/CarController.h
+	@echo "Compiling CarController.o..."
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 run: $(TARGET)
