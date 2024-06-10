@@ -4,7 +4,6 @@
 
 LaserReceiver::LaserReceiver(int pin) : pin(pin) {}
 void LaserReceiver::init() {
-    wiringPiSetupPhys();  // Initialize wiringPi using physical pin numbering
     pinMode(this->pin, INPUT); // Set the specified pin to input mode
 }
 

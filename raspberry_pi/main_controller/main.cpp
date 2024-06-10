@@ -1,6 +1,3 @@
-//
-// Created by Stefan on 24.05.2024.
-//
 #include <iostream>
 #include "../util/display_control/DisplayController.h"
 #include "../util/light_sensor/ADCReader.h"
@@ -28,10 +25,10 @@ int motorIN2 = 15;
 int motorEN = 11;
 int servoPIN = 37;
 int adcAddress = 0x48;
-int displayAddress = -1;
-int laserReceiverHeightPIN = -1;
-int laserReceiverWidthPIN = -1;
-int laserReceiverCarDetectionPIN = -1;
+int displayAddress = 0x27;
+int laserReceiverWidthPIN = 35;
+int laserReceiverHeightPIN = 40;
+int laserReceiverCarDetectionPIN = 38;
 int laserTransmitterBlackPIN = 31;
 int laserTransmitterWhitePIN = 32;
 int laserTransmitterColorPIN = 33;
@@ -48,115 +45,148 @@ int main() {
 
     bool laserWidthBlocked = false;
     bool laserHeightBlocked = false;
+    bool objectStuck = false; // New variable
     unsigned long laserWidthBlockedTime = 0;
     unsigned long laserHeightBlockedTime = 0;
     const unsigned long stuckThreshold = 3000; // 3 seconds in milliseconds
 
     int colorReadings = 0;
     bool colorSensingInProgress = false;
-    bool startConveyor = true;
+    bool startConveyor = false;
 
-	unsigned long pistonActionTime = 0;
-    const unsigned long pistonTime = 1500; // 1.5 seconds in milliseconds
-    enum PistonState {
-        PUSHING,
-        PULLING,
-        STOPPING,
-        IDLE
-    };
-    PistonState pistonState = IDLE;
+    bool pushDone = false;
+    bool pullDone = false;
+    bool stopDone = true;
+    unsigned long pushTime = 0;
+    unsigned long pullTime = 0;
+    unsigned long stopTime = 0;
+    const unsigned long pistonTime = 1500;
+
+    bool colorDelayInProgress = false;
+    unsigned long colorDelayStartTime = 0;
+    const unsigned long colorDelayTime = 500;
+
+    bool diskFalling = false;
+    unsigned long diskFallStartTime = 0;
+    const unsigned long diskFallTime = 1000; // 1 second for the disk to fall into the tube
+
+    std::cout << "Entering while loop" << std::endl;
 
     while (true) {
         unsigned long currentTime = millis();
-        /**
-        // Check for initial laser blockage
-        if (!laserWidthBlocked && sorterRobot.getLaserReceiverWidth().isLaserDetected()) {
-            laserWidthBlocked = true;
-            laserWidthBlockedTime = currentTime;
-            sorterRobot.getDisplayController().displayString("Width Laser Blocked");
-        }
 
-        // Check if the laser is still blocked after 3 seconds
-        if (laserWidthBlocked && sorterRobot.getLaserReceiverWidth().isLaserDetected()) {
-            if (currentTime - laserWidthBlockedTime >= stuckThreshold) {
-                sorterRobot.getDisplayController().displayString("Object Stuck at Width Laser");
-                // Handle stuck condition, e.g., stop system or raise an alarm
-                laserWidthBlocked = false; // Reset the blockage flag after handling
-            }
-        }
-
-        // Reset blockage flag if the object moves away before 3 seconds
-        if (laserWidthBlocked && !sorterRobot.getLaserReceiverWidth().isLaserDetected()) {
-            sorterRobot.getDisplayController().displayString("Width Laser Cleared");
-            laserWidthBlocked = false;
-            sorterRobot.incrementDisksInTube(); // Increment disksInTube when a disk passes the second laser
-        }
-
-        // Similar logic for height laser
-        if (!laserHeightBlocked && sorterRobot.getLaserReceiverHeight().isLaserDetected()) {
+        bool heightLaserDetected = sorterRobot.getLaserReceiverHeight().isLaserDetected();
+        if (!laserHeightBlocked && !heightLaserDetected && !objectStuck) {
+            std::cout << "Height Laser Blocked" << std::endl;
             laserHeightBlocked = true;
             laserHeightBlockedTime = currentTime;
-            sorterRobot.getDisplayController().displayString("Height Laser Blocked");
         }
 
-        if (laserHeightBlocked && sorterRobot.getLaserReceiverHeight().isLaserDetected()) {
+        if (laserHeightBlocked && heightLaserDetected) {
+            std::cout << "Height Laser Cleared" << std::endl;
+            laserHeightBlocked = false;
+            objectStuck = false; // Reset the objectStuck variable when the laser is cleared
+        }
+
+        if (laserHeightBlocked && !heightLaserDetected) {
             if (currentTime - laserHeightBlockedTime >= stuckThreshold) {
+                std::cout << "Object Stuck at Height Laser" << std::endl;
                 sorterRobot.getDisplayController().displayString("Object Stuck at Height Laser");
-                laserHeightBlocked = false;
+                objectStuck = true; // Set the objectStuck variable to true when an object is detected as stuck
             }
         }
 
-        if (laserHeightBlocked && !sorterRobot.getLaserReceiverHeight().isLaserDetected()) {
-            sorterRobot.getDisplayController().displayString("Height Laser Cleared");
-            laserHeightBlocked = false;
+        bool widthLaserDetected = sorterRobot.getLaserReceiverWidth().isLaserDetected();
+        if (!laserWidthBlocked && !widthLaserDetected && !objectStuck) {
+            std::cout << "Width Laser Blocked" << std::endl;
+            laserWidthBlocked = true;
+            laserWidthBlockedTime = currentTime;
         }
 
-        if (sorterRobot.getDisksInTube() > 0 && !colorSensingInProgress) {
-            colorSensingInProgress = true;
-            colorReadings = 0;
+        if (laserWidthBlocked && widthLaserDetected) {
+            std::cout << "Width Laser Cleared" << std::endl;
+            laserWidthBlocked = false;
+            sorterRobot.incrementDisksInTube();
+
+            // Check if color sensing is not already in progress
+            if (!colorSensingInProgress) {
+                diskFalling = true;
+                diskFallStartTime = currentTime;
+            }
         }
 
-        // Perform color sensing if it's in progress
+        if (laserWidthBlocked && !widthLaserDetected) {
+            if (currentTime - laserWidthBlockedTime >= stuckThreshold) {
+                std::cout << "Object Stuck at Width Laser" << std::endl;
+                sorterRobot.getDisplayController().displayString("Object Stuck at Width Laser");
+                objectStuck = true; // Set the objectStuck variable to true when an object is detected as stuck
+            }
+        }
+
+        if (diskFalling && currentTime - diskFallStartTime >= diskFallTime) {
+            diskFalling = false;
+
+            if (!colorSensingInProgress) {
+                colorSensingInProgress = true;
+                colorReadings = 0;
+            }
+        }
+
         if (colorSensingInProgress) {
-            // Perform a color reading
-            // For now, we'll just print a message
-            std::cout << "Performing color reading " << (colorReadings + 1) << std::endl;
+            if (!colorDelayInProgress) {
+                std::cout << "Performing color reading " << (colorReadings + 1) << std::endl;
 
-            colorReadings++;
+                colorReadings++;
+
+                colorDelayInProgress = true;
+                colorDelayStartTime = currentTime;
+            }
+            else if (currentTime - colorDelayStartTime >= colorDelayTime) {
+                colorDelayInProgress = false;
+            }
 
             if (colorReadings >= 3) {
-                // We've done three color readings, so we can start the conveyor belt
                 startConveyor = true;
                 colorSensingInProgress = false;
             }
         }
-        **/
 
+        if (startConveyor) {
+            if (!pushDone && currentTime - stopTime >= pistonTime) {
+                sorterRobot.getServoController().pushPiston();
+                std::cout << "Piston pushed at time: " << currentTime << std::endl;
+                pushTime = currentTime;
+                pushDone = true;
+                pullDone = false;
+            }
 
-        if (currentTime >= pistonActionTime) {
-            switch (pistonState) {
-                case IDLE:
-                    sorterRobot.getServoController().pushPiston();
-                    pistonState = PUSHING;
-                    pistonActionTime = currentTime + pistonTime;
-                    break;
-                case PUSHING:
-                    sorterRobot.getServoController().pullPiston();
-                    pistonState = PULLING;
-                    pistonActionTime = currentTime + pistonTime;
-                    break;
-                case PULLING:
-                    sorterRobot.getServoController().stopPiston();
-                    pistonState = STOPPING;
-                    pistonActionTime = currentTime + pistonTime;
-                    break;
-                case STOPPING:
-                    pistonState = IDLE;
-                    break;
+            if (pushDone && !pullDone && currentTime - pushTime >= pistonTime) {
+                sorterRobot.getServoController().pullPiston();
+                std::cout << "Piston pulled at time: " << currentTime << std::endl;
+                pullTime = currentTime;
+                pullDone = true;
+                stopDone = false;
+            }
+
+            if (pullDone && !stopDone && currentTime - pullTime >= pistonTime) {
+                sorterRobot.getServoController().stopPiston();
+                std::cout << "Piston stopped at time: " << currentTime << std::endl;
+                stopTime = currentTime;
+                stopDone = true;
+                pushDone = false;
+
+                sorterRobot.decrementDisksInTube();
+
+                if (sorterRobot.getDisksInTube() > 0) {
+                    colorSensingInProgress = true;
+                    colorReadings = 0;
+                }
+
+                startConveyor = false; // Add this line to stop the conveyor after the piston has moved
             }
         }
 
-        usleep(100000); // Sleep for 100ms to reduce CPU usage
+        usleep(50000);
     }
 
     return 0;

@@ -5,7 +5,9 @@
 #define PAUSE 0
 
 ServoController::ServoController(int pin) : pin(pin) {
+    std::cout << "servo on"<< std::endl;
     softPwmCreate(this->pin, 4, 24);
+    stopPiston();
 }
 
 ServoController::~ServoController() {
