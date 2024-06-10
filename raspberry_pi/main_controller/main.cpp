@@ -45,7 +45,8 @@ int main() {
 
     bool laserWidthBlocked = false;
     bool laserHeightBlocked = false;
-    bool objectStuck = false; // New variable
+    bool objectStuck = false;
+    bool stuckMessageDisplayed = false; // New variable
     unsigned long laserWidthBlockedTime = 0;
     unsigned long laserHeightBlockedTime = 0;
     const unsigned long stuckThreshold = 3000; // 3 seconds in milliseconds
@@ -85,14 +86,16 @@ int main() {
         if (laserHeightBlocked && heightLaserDetected) {
             std::cout << "Height Laser Cleared" << std::endl;
             laserHeightBlocked = false;
-            objectStuck = false; // Reset the objectStuck variable when the laser is cleared
+            objectStuck = false;
+            stuckMessageDisplayed = false; // Reset the stuckMessageDisplayed variable when the laser is cleared
         }
 
         if (laserHeightBlocked && !heightLaserDetected) {
-            if (currentTime - laserHeightBlockedTime >= stuckThreshold) {
+            if (currentTime - laserHeightBlockedTime >= stuckThreshold && !stuckMessageDisplayed) {
                 std::cout << "Object Stuck at Height Laser" << std::endl;
                 sorterRobot.getDisplayController().displayString("Object Stuck at Height Laser");
-                objectStuck = true; // Set the objectStuck variable to true when an object is detected as stuck
+                objectStuck = true;
+                stuckMessageDisplayed = true; // Set the stuckMessageDisplayed variable to true when the message is displayed
             }
         }
 
@@ -116,10 +119,11 @@ int main() {
         }
 
         if (laserWidthBlocked && !widthLaserDetected) {
-            if (currentTime - laserWidthBlockedTime >= stuckThreshold) {
+            if (currentTime - laserWidthBlockedTime >= stuckThreshold && !stuckMessageDisplayed) {
                 std::cout << "Object Stuck at Width Laser" << std::endl;
                 sorterRobot.getDisplayController().displayString("Object Stuck at Width Laser");
-                objectStuck = true; // Set the objectStuck variable to true when an object is detected as stuck
+                objectStuck = true;
+                stuckMessageDisplayed = true; // Set the stuckMessageDisplayed variable to true when the message is displayed
             }
         }
 
