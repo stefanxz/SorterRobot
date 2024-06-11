@@ -67,13 +67,13 @@ void loop() {
         }
     }
 
-    if (isDrivingBackward) {
+    if (isDrivingBackward && !car.isDropoffInProgress()) {
         if (digitalRead(laserSensorPin) == HIGH && !ignoreFirstLaser && millis() > ignoreEndTimeBackward) {
             car.stopMotors();
             isDrivingBackward = false;
             ignoreFirstLaser = true;
             ignoreEndTimeForward = millis() + ignoreDuration;
-            digitalWrite(LED_BUILTIN, LOW); 
+            digitalWrite(LED_BUILTIN, LOW);
             car.setReady(true);
         } else if (digitalRead(laserSensorPin) == HIGH && ignoreFirstLaser) {
             ignoreFirstLaser = false;
@@ -81,4 +81,7 @@ void loop() {
             digitalWrite(LED_BUILTIN, HIGH);
         }
     }
+
+    car.updateServo(servo); // Call the updateServo method to handle the servo movement
 }
+

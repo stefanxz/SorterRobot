@@ -16,10 +16,17 @@ public:
   void setSpeed(int newSpeed);
   bool isReady();
   void handleDropoff(Servo &servo);
+  void updateServo(Servo &servo);
+  bool isDropoffInProgress();
   void setReady(bool car_ready);
 
 private:
   void setupMotors();
+
+  enum DropoffState { IDLE, MOVING_TO_DROP, WAITING_AT_DROP, MOVING_BACK, DONE };
+  DropoffState dropoffState = IDLE;
+  unsigned long dropoffStartTime = 0;
+  const unsigned long servoMoveDuration = 1000; // Duration for each servo move
 
   // Motor pins
   const int motor1Pin1 = 7;
