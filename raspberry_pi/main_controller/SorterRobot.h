@@ -55,7 +55,7 @@ public:
 
     void decrementDisksInTube();
 
-    int laserControlSystem(int);
+    void laserControlSystem(int);
 
     int getDisksInTube() const;
 

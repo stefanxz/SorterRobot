@@ -112,8 +112,24 @@ void SorterRobot::robotSetup(int adcConfig) {
 
 }
 
-int SorterRobot::laserControlSystem(int gateNumber) {
-   return 0;
+void SorterRobot::laserControlSystem(int gateNumber) {
+    switch(gateNumber){
+        case 1:
+            laserTransmitterWhite.turnOn();
+            laserTransmitterColor.turnOff();
+            laserTransmitterBlack.turnOff();
+            break;
+        case 2:
+            laserTransmitterBlack.turnOn();
+            laserTransmitterColor.turnOff();
+            laserTransmitterWhite.turnOff();
+            break;
+        case 3:
+            laserTransmitterColor.turnOn();
+            laserTransmitterWhite.turnOff();
+            laserTransmitterBlack.turnOff();
+            break;
+    }
 }
 
 

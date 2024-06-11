@@ -72,6 +72,7 @@ int main() {
     bool colorSensingInProgress = false;
     bool startConveyor = false;
     bool conveyorRunning = false;
+    bool carReadyWaitInProgress = false; // Flag to indicate waiting for car readiness
 
     bool pushDone = false;
     bool pullDone = false;
@@ -102,6 +103,9 @@ int main() {
     unsigned long diskTimeoutStartTime = 0; // Time when disk timeout starts
     const unsigned long diskTimeoutThreshold = 2000; // 2 seconds threshold
 
+    unsigned long carReadyCheckTime = 0; // Time for last car ready check
+    const unsigned long carReadyCheckInterval = 500; // Interval between car ready checks
+
     int gateNumber = 0;
     int disksInTube = 0;  // Track the number of disks
     bool diskPassedWidthFilter = false;  // Track if a disk has passed the width filter
@@ -122,6 +126,7 @@ int main() {
             objectStuckAtHeight = false;
             stuckMessageDisplayedAtHeight = false;
             std::cout << "Height Laser Cleared at time: " << currentTime << std::endl;
+            sorterRobot.getDisplayController().displayClear();
         } else if (laserHeightBlocked && !heightLaserDetected &&
                    currentTime - laserHeightBlockedTime >= stuckThreshold && !stuckMessageDisplayedAtHeight) {
             sorterRobot.getDisplayController().displayString("Object Stuck at Height Laser");
@@ -149,6 +154,7 @@ int main() {
             objectStuckAtWidth = false;
             stuckMessageDisplayedAtWidth = false;
             std::cout << "Width Laser Cleared at time: " << currentTime << std::endl;
+            sorterRobot.getDisplayController().displayClear();
         } else if (laserWidthBlocked && !widthLaserDetected && currentTime - laserWidthBlockedTime >= stuckThreshold &&
                    !stuckMessageDisplayedAtWidth) {
             sorterRobot.getDisplayController().displayString("Object Stuck at Width Laser");
@@ -162,7 +168,7 @@ int main() {
         if (diskFalling && currentTime - diskFallStartTime >= diskFallTime) {
             diskFalling = false;
             std::cout << "Disk settled at time: " << currentTime << std::endl;
-            if (!objectStuckAtWidth && !forcedClear) {
+            if (!objectStuckAtWidth && !forcedClear && !carReadyWaitInProgress) { // Add check for carReadyWaitInProgress
                 colorSensingInProgress = true;
                 colorReadings = 0;
                 std::cout << "Color sensing initiated at time: " << currentTime << std::endl;
@@ -180,14 +186,26 @@ int main() {
                 } else if (currentTime - colorDelayStartTime >= colorDelayTime) {
                     colorDelayInProgress = false;
                 }
-            } else if (!carReadyCheckInProgress && sorterRobot.getCarController().isCarReady()) {
-                startConveyor = true;
-                sorterRobot.getMotorController().run(true); // Start conveyor before piston action
-                conveyorRunning = true;
-                std::cout << "Conveyor started at time: " << currentTime << std::endl;
-                carOccupied = true;
-                carReadyCheckInProgress = false; // Mark car ready check as completed
-                colorSensingInProgress = false; // Reset color sensing for next cycle
+            } else {
+                if (!carReadyCheckInProgress) {
+                    carReadyCheckInProgress = true;
+                    carReadyCheckTime = currentTime;  // Initialize car ready check time
+                }
+                if (currentTime - carReadyCheckTime >= carReadyCheckInterval) {
+                    carReadyCheckTime = currentTime;  // Update the last check time
+                    if (sorterRobot.getCarController().isCarReady()) {
+                        startConveyor = true;
+                        sorterRobot.getMotorController().run(true); // Start conveyor before piston action
+                        conveyorRunning = true;
+                        std::cout << "Conveyor started at time: " << currentTime << std::endl;
+                        carOccupied = true;
+                        carReadyCheckInProgress = false; // Mark car ready check as completed
+                        carReadyWaitInProgress = false; // Reset car ready wait flag
+                        colorSensingInProgress = false; // Reset color sensing for next cycle
+                    } else {
+                        carReadyWaitInProgress = true;  // Set the flag to indicate waiting for car readiness
+                    }
+                }
             }
         }
 
@@ -201,12 +219,12 @@ int main() {
                 pushDone = true;
                 pullDone = false;
                 stopDone = false; // Set stopDone to false here
-            } else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 65) {
+            } else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 130) {
                 sorterRobot.getServoController().pullPiston();
                 std::cout << "Piston pulled at time: " << currentTime << std::endl;
                 pullTime = currentTime;
                 pullDone = true;
-            } else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime + 65) {
+            } else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime + 130) {
                 sorterRobot.getServoController().stopPiston();
                 std::cout << "Piston stopped at time: " << currentTime << std::endl;
                 stopTime = currentTime;
@@ -252,6 +270,7 @@ int main() {
             checkDiskPassed = false; // Reset disk passed state
             carOccupied = false; // Reset car occupied state
             carReadyCheckInProgress = false; // Reset readiness check state
+            carReadyWaitInProgress = false; // Reset car ready wait flag
             driveRequestSent = false; // Ensure no drive request is pending
             std::cout << "Disk timeout reset at time: " << currentTime << std::endl;
             if (sorterRobot.getDisksInTube() > 0) {
@@ -270,6 +289,7 @@ int main() {
             carReadyCheckInProgress = false; // Reset readiness check
             waitingForCarToPass = false; // Reset waiting for car to pass
             diskTimeoutInProgress = false; // Ensure disk timeout is not in progress
+            carReadyWaitInProgress = false; // Reset car ready wait flag
             if (sorterRobot.getDisksInTube() > 0) {
                 std::cout << "Starting next cycle" << std::endl;
                 colorSensingInProgress = true; // Prepare for next disk's color sensing
