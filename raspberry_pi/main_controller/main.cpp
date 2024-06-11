@@ -32,6 +32,9 @@ void system_init() {
 int motorIN1 = 13;
 int motorIN2 = 15;
 int motorEN = 11;
+int firstConveyorIN1 = 24;
+int firstConveyorIN2 = 26;
+int firstConveyorEN = 23;
 int servoPIN = 37;
 int adcAddress = 0x48;
 int displayAddress = 0x27;
@@ -46,7 +49,8 @@ int adcConfig = 0xC183;
 int main() {
     system_init();
     std::string arduinoIP = "172.20.10.2";
-    SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, servoPIN, adcAddress, displayAddress, laserReceiverHeightPIN,
+    SorterRobot sorterRobot(motorIN1, motorIN2, motorEN, firstConveyorIN1, firstConveyorIN2, firstConveyorEN, servoPIN,
+                            adcAddress, displayAddress, laserReceiverHeightPIN,
                             laserReceiverWidthPIN, laserReceiverCarDetectionPIN, laserTransmitterBlackPIN,
                             laserTransmitterWhitePIN, laserTransmitterColorPIN, arduinoIP);
     sorterRobot.robotSetup(adcConfig);
@@ -246,6 +250,7 @@ int main() {
 
         usleep(10000); // Sleep to prevent high CPU usage
     }
+
 
     return 0;
 }
