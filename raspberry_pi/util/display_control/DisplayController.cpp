@@ -36,12 +36,13 @@ void DisplayController::openI2CBus(const char *filename, int i2cAddress) {
 }
 
 void DisplayController::displayClear() const {
+    std::cout<< "Cleared display" << std::endl;
     sendCmd(0x01);  // Clear display
     delay(2);    // Delay for clearing to complete
 }
 
 void DisplayController::displayString(const char *str) const {
-    this->displayClear();
+    displayClear();
     int charCount = 0;  // Tracks the number of characters printed on the current line
     int line = 1;       // Start on the first line
 

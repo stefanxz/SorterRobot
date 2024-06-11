@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream> // For stringstream
 #include "../util/display_control/DisplayController.h"
 #include "../util/light_sensor/ADCReader.h"
 #include "../util/motor_control/MotorController.h"
@@ -97,9 +98,13 @@ int main() {
     bool driveRequestSent = false;
     bool waitingForCarToPass = false;
     bool checkDiskPassed = false; // New state for checking disk passed carDetectionLaser
+    bool diskTimeoutInProgress = false; // Track disk timeout state
+    unsigned long diskTimeoutStartTime = 0; // Time when disk timeout starts
+    const unsigned long diskTimeoutThreshold = 2000; // 2 seconds threshold
 
     int gateNumber = 0;
     int disksInTube = 0;  // Track the number of disks
+    bool diskPassedWidthFilter = false;  // Track if a disk has passed the width filter
 
     std::cout << "Entering main control loop" << std::endl;
 
@@ -137,6 +142,7 @@ int main() {
                 sorterRobot.incrementDisksInTube();
                 diskFalling = true;
                 diskFallStartTime = currentTime;
+                diskPassedWidthFilter = true;  // Indicate that a disk has passed the width filter
                 std::cout << "Disk falling initiated at time: " << currentTime << std::endl;
             }
             laserWidthBlocked = false;
@@ -209,19 +215,24 @@ int main() {
                 pullDone = false;
                 startConveyor = false; // Stop the conveyor after piston operations
                 checkDiskPassed = true; // Move to the next state to check if the disk has passed carDetectionLaser
+                diskTimeoutInProgress = true; // Start the disk timeout check
+                diskTimeoutStartTime = currentTime; // Record the time when the disk should be detected
             }
         }
 
         // Car detection laser logic
         bool carDetectionLaserDetected = sorterRobot.getLaserReceiverCarDetection().isLaserDetected();
         if (!carDetectionLaserBlocked && !carDetectionLaserDetected) {
-            std::cout << "Car Detection Laser Blocked at time: " << currentTime << std::endl;
-            carDetectionLaserBlocked = true;
-            laserCarDetectionBlockedTime = currentTime;
+            if (diskPassedWidthFilter) {  // Only set car detection laser state if a disk has passed the width filter
+                std::cout << "Car Detection Laser Blocked at time: " << currentTime << std::endl;
+                carDetectionLaserBlocked = true;
+                laserCarDetectionBlockedTime = currentTime;
+            }
         } else if (carDetectionLaserBlocked && carDetectionLaserDetected) {
             std::cout << "Car Detection Laser Cleared at time: " << currentTime << std::endl;
             carDetectionLaserBlocked = false;
             carDetectionLaserCleared = true;
+            diskPassedWidthFilter = false;  // Reset the flag after the disk has been detected
         }
 
         // Check if disk has passed carDetectionLaser
@@ -233,6 +244,23 @@ int main() {
             std::cout << "Drive command sent to gate " << gateNumber << " at time: " << currentTime << std::endl;
         }
 
+        // Disk timeout logic
+        if (diskTimeoutInProgress && (currentTime - diskTimeoutStartTime >= diskTimeoutThreshold)) {
+            std::cout << "Disk did not make it to the conveyor belt at time: " << currentTime << std::endl;
+            sorterRobot.getDisplayController().displayString("Disk did not make it to the conveyor belt");
+            diskTimeoutInProgress = false; // Reset the disk timeout state
+            checkDiskPassed = false; // Reset disk passed state
+            carOccupied = false; // Reset car occupied state
+            carReadyCheckInProgress = false; // Reset readiness check state
+            driveRequestSent = false; // Ensure no drive request is pending
+            std::cout << "Disk timeout reset at time: " << currentTime << std::endl;
+            if (sorterRobot.getDisksInTube() > 0) {
+                std::cout << "Starting next cycle" << std::endl;
+                colorSensingInProgress = true; // Prepare for next disk's color sensing
+                colorReadings = 0;
+            }
+        }
+
         // Reset after driving
         if (driveRequestSent && !carDetectionLaserBlocked) {
             std::cout << "Disk passed car detection laser at time: " << currentTime << std::endl;
@@ -241,6 +269,7 @@ int main() {
             carDetectionLaserCleared = false; // Reset for next detection
             carReadyCheckInProgress = false; // Reset readiness check
             waitingForCarToPass = false; // Reset waiting for car to pass
+            diskTimeoutInProgress = false; // Ensure disk timeout is not in progress
             if (sorterRobot.getDisksInTube() > 0) {
                 std::cout << "Starting next cycle" << std::endl;
                 colorSensingInProgress = true; // Prepare for next disk's color sensing
@@ -250,7 +279,6 @@ int main() {
 
         usleep(10000); // Sleep to prevent high CPU usage
     }
-
 
     return 0;
 }

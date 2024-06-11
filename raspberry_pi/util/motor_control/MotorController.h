@@ -10,7 +10,7 @@ private:
     int in1;
     int in2;
     int en;
-    int speed = 60;
+    int speed = 50;
 
 public:
     MotorController(int pinIn1, int pinIn2, int pinEn);

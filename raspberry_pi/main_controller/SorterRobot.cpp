@@ -112,4 +112,8 @@ void SorterRobot::robotSetup(int adcConfig) {
 
 }
 
+int SorterRobot::laserControlSystem(int gateNumber) {
+   return 0;
+}
+
 
