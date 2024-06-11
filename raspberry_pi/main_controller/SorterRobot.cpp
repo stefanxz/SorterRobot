@@ -2,17 +2,21 @@
 #include <iostream>
 #include <sstream>
 
-SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, int adcAddress, int displayAddress,
+SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int firstConveyorIN1, int firstConveyorIN2,
+                         int firstConveyorEN, int servoPIN,
+                         int adcAddress, int displayAddress,
                          int laserReceiverHeightPIN, int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN,
                          int laserTransmitterBlackPIN, int laserTransmitterWhitePIN, int laserTransmitterColorPIN,
                          const std::string &carControllerBaseUrl)
         : motorIN1(motorIN1), motorIN2(motorIN2), motorEN(motorEN),
+          firstConveyorIN1(firstConveyorIN1), firstConveyorIN2(firstConveyorEN), firstConveyorEN(firstConveyorEN),
           servoPIN(servoPIN), adcAddress(adcAddress),
           laserReceiverHeightPIN(laserReceiverHeightPIN), laserReceiverWidthPIN(laserReceiverWidthPIN),
           laserReceiverCarDetectionPIN(laserReceiverCarDetectionPIN),
           laserTransmitterBlackPIN(laserTransmitterBlackPIN), laserTransmitterWhitePIN(laserTransmitterWhitePIN),
           laserTransmitterColorPIN(laserTransmitterColorPIN), displayAddress(displayAddress),
           motorController(motorIN1, motorIN2, motorEN),
+          firstConveyor(firstConveyorIN1, firstConveyorIN2, firstConveyorEN),
           servoController(servoPIN),
           adcReader(adcAddress),
           displayController(displayAddress),
@@ -24,6 +28,8 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, 
 }
 
 MotorController &SorterRobot::getMotorController() { return motorController; }
+
+MotorController &SorterRobot::getFirstConveyor() { return firstConveyor; }
 
 ServoController &SorterRobot::getServoController() { return servoController; }
 
@@ -56,6 +62,13 @@ void SorterRobot::robotSetup(int adcConfig) {
     // Initializing conveyor belt motors
     if (motorIN1 != -1 && motorIN2 != -1 && motorEN != -1) {
         motorController.setup();
+        std::cout << "Second conveyor Belt initialized" << '\n';
+    }
+
+    if (firstConveyorIN1 != -1 && firstConveyorIN2 != -1 && firstConveyorEN != -1) {
+        firstConveyor.setup();
+        firstConveyor.slowerDaddy(1);
+        firstConveyor.run(true);
         std::cout << "Conveyor Belt initialized" << '\n';
     }
 
@@ -98,3 +111,5 @@ void SorterRobot::robotSetup(int adcConfig) {
     std::cout << "Robot setup complete." << '\n';
 
 }
+
+

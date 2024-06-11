@@ -16,11 +16,18 @@
 class SorterRobot {
 public:
     SorterRobot(int motorIN1, int motorIN2, int motorEN,
+                int firstConveyorIN1, int firstConveyorIN2, int firstConveyorEN,
                 int servoPIN, int adcAddress, int displayAddress, int laserReceiverHeightPIN,
                 int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN, int laserTransmitterBlackPIN,
                 int laserTransmitterWhitePIN, int laserTransmitterColorPIN, const std::string& carControllerBaseUrl);
 
+    ~SorterRobot(){
+        getMotorController().stop();
+        getFirstConveyor().stop();
+    }
+
     MotorController &getMotorController();
+    MotorController &getFirstConveyor();
     ServoController &getServoController();
     ADCReader &getAdcReader();
     DisplayController &getDisplayController();
@@ -32,12 +39,15 @@ public:
     LaserTransmitter &getLaserTransmitterColor();
     CarController &getCarController();
 
+
     void incrementDisksInTube();
     void decrementDisksInTube();
     int getDisksInTube() const;
     void robotSetup(int adcConfig);
 
 private:
+
+    MotorController firstConveyor;
     MotorController motorController;
     ServoController servoController;
     ADCReader adcReader;
@@ -50,6 +60,10 @@ private:
     LaserTransmitter laserTransmitterColor;
     CarController carController;
 
+
+    int firstConveyorIN1;
+    int firstConveyorIN2;
+    int firstConveyorEN;
     int motorIN1;
     int motorIN2;
     int motorEN;
@@ -62,7 +76,7 @@ private:
     int laserTransmitterBlackPIN;
     int laserTransmitterWhitePIN;
     int laserTransmitterColorPIN;
-    int disksInTube;
+    int disksInTube{};
 };
 
 #endif //SORTERROBOT_SORTERROBOT_H
