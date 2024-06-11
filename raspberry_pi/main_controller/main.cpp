@@ -195,12 +195,12 @@ int main() {
                 pushDone = true;
                 pullDone = false;
                 stopDone = false; // Set stopDone to false here
-            } else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime) {
+            } else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 65) {
                 sorterRobot.getServoController().pullPiston();
                 std::cout << "Piston pulled at time: " << currentTime << std::endl;
                 pullTime = currentTime;
                 pullDone = true;
-            } else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime) {
+            } else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime + 65) {
                 sorterRobot.getServoController().stopPiston();
                 std::cout << "Piston stopped at time: " << currentTime << std::endl;
                 stopTime = currentTime;
