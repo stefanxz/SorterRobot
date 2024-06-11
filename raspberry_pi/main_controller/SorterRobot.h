@@ -19,30 +19,46 @@ public:
                 int firstConveyorIN1, int firstConveyorIN2, int firstConveyorEN,
                 int servoPIN, int adcAddress, int displayAddress, int laserReceiverHeightPIN,
                 int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN, int laserTransmitterBlackPIN,
-                int laserTransmitterWhitePIN, int laserTransmitterColorPIN, const std::string& carControllerBaseUrl);
+                int laserTransmitterWhitePIN, int laserTransmitterColorPIN, const std::string &carControllerBaseUrl);
 
-    ~SorterRobot(){
+    ~SorterRobot() {
         getMotorController().stop();
         getFirstConveyor().stop();
     }
 
     MotorController &getMotorController();
+
     MotorController &getFirstConveyor();
+
     ServoController &getServoController();
+
     ADCReader &getAdcReader();
+
     DisplayController &getDisplayController();
+
     LaserReceiver &getLaserReceiverHeight();
+
     LaserReceiver &getLaserReceiverWidth();
+
     LaserReceiver &getLaserReceiverCarDetection();
+
     LaserTransmitter &getLaserTransmitterBlack();
+
     LaserTransmitter &getLaserTransmitterWhite();
+
     LaserTransmitter &getLaserTransmitterColor();
+
     CarController &getCarController();
 
 
     void incrementDisksInTube();
+
     void decrementDisksInTube();
+
+    int laserControlSystem(int);
+
     int getDisksInTube() const;
+
     void robotSetup(int adcConfig);
 
 private:
