@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-CarController::CarController(const std::string& base_url) : base_url(base_url) {
+CarController::CarController(const std::string &base_url) : base_url(base_url) {
     curl = curl_easy_init();
     if (!curl) {
         std::cerr << "CURL initialization failed." << std::endl;
@@ -15,7 +15,7 @@ CarController::~CarController() {
     }
 }
 
-void CarController::sendDriveCommand(int gateNumber) {
+void CarController::drive(int gateNumber) {
     if (!curl) return;
 
     std::ostringstream dataStream;
@@ -38,8 +38,8 @@ void CarController::sendDriveCommand(int gateNumber) {
     }
 }
 
-void CarController::isCarReady() {
-    if (!curl) return;
+bool CarController::isCarReady() {
+    if (!curl) return false;
 
     std::string url = base_url + "/ready";
 
@@ -53,13 +53,20 @@ void CarController::isCarReady() {
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
         std::cerr << "CURL failed: " << curl_easy_strerror(res) << std::endl;
+        return false;
     } else {
         std::cout << "Response: " << response_string << std::endl;
+        // Assuming the response is "0: car is not ready" or "1: car is ready"
+        if (response_string.find('1') != std::string::npos) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
-size_t CarController::writeCallback(void* contents, size_t size, size_t nmemb, std::string* str) {
+size_t CarController::writeCallback(void *contents, size_t size, size_t nmemb, std::string *str) {
     const size_t totalBytes = size * nmemb;
-    str->append(static_cast<char*>(contents), totalBytes);
+    str->append(static_cast<char *>(contents), totalBytes);
     return totalBytes;
 }

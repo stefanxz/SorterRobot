@@ -9,8 +9,8 @@ public:
     CarController(const std::string& base_url);
     ~CarController();
 
-    void sendDriveCommand(int gateNumber);
-    void isCarReady();
+    void drive(int gateNumber);
+    bool isCarReady();
 
 private:
     CURL* curl;

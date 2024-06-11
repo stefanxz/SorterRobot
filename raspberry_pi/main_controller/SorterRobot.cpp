@@ -5,7 +5,7 @@
 SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, int adcAddress, int displayAddress,
                          int laserReceiverHeightPIN, int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN,
                          int laserTransmitterBlackPIN, int laserTransmitterWhitePIN, int laserTransmitterColorPIN,
-                         const std::string& carControllerBaseUrl)
+                         const std::string &carControllerBaseUrl)
         : motorIN1(motorIN1), motorIN2(motorIN2), motorEN(motorEN),
           servoPIN(servoPIN), adcAddress(adcAddress),
           laserReceiverHeightPIN(laserReceiverHeightPIN), laserReceiverWidthPIN(laserReceiverWidthPIN),
@@ -24,19 +24,31 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int servoPIN, 
 }
 
 MotorController &SorterRobot::getMotorController() { return motorController; }
+
 ServoController &SorterRobot::getServoController() { return servoController; }
+
 ADCReader &SorterRobot::getAdcReader() { return adcReader; }
+
 DisplayController &SorterRobot::getDisplayController() { return displayController; }
+
 LaserReceiver &SorterRobot::getLaserReceiverCarDetection() { return laserReceiverCarDetection; }
+
 LaserReceiver &SorterRobot::getLaserReceiverWidth() { return laserReceiverWidth; }
+
 LaserReceiver &SorterRobot::getLaserReceiverHeight() { return laserReceiverHeight; }
+
 LaserTransmitter &SorterRobot::getLaserTransmitterBlack() { return laserTransmitterBlack; }
+
 LaserTransmitter &SorterRobot::getLaserTransmitterWhite() { return laserTransmitterWhite; }
+
 LaserTransmitter &SorterRobot::getLaserTransmitterColor() { return laserTransmitterColor; }
+
 CarController &SorterRobot::getCarController() { return carController; }
 
 void SorterRobot::incrementDisksInTube() { disksInTube++; }
+
 void SorterRobot::decrementDisksInTube() { if (disksInTube > 0) disksInTube--; }
+
 int SorterRobot::getDisksInTube() const { return disksInTube; }
 
 

@@ -3,16 +3,13 @@
 //
 #include "DisplayController.h"
 
-DisplayController::DisplayController(int i2cAddress) {
-    if (i2cAddress != -1) {
-        fd = wiringPiI2CSetup(i2cAddress);
-
-        if (fd == -1) {
-            std::cerr << "Failed to initialize I2C communication.\n";
-            throw std::runtime_error("I2C Setup failed");
-        }
-
+DisplayController::DisplayController(int i2cAddress) : fd(-1) {
+    if (i2cAddress != -1) {  // Check if the address is valid
+        openI2CBus("/dev/i2c-0", i2cAddress);  // Open I2C bus 0
         displayInit();  // Initialize the display
+    } else {
+        std::cerr << "Invalid I2C address provided.\n";
+        throw std::runtime_error("Invalid I2C address");
     }
 }
 
@@ -25,16 +22,93 @@ void DisplayController::displayInit() {
     displayClear();
 }
 
-void DisplayController::displayClear() {
+void DisplayController::openI2CBus(const char *filename, int i2cAddress) {
+    if ((fd = open(filename, O_RDWR)) < 0) {
+        std::cerr << "Failed to open the I2C bus: " << filename << " Error: " << std::strerror(errno) << "\n";
+        throw std::runtime_error("Failed to open I2C bus");
+    }
+    if (ioctl(fd, I2C_SLAVE, i2cAddress) < 0) {
+        std::cerr << "Failed to acquire bus access and/or talk to slave at address " << i2cAddress <<
+                  ". Error: " << std::strerror(errno) << "\n";
+        close(fd);
+        throw std::runtime_error("Failed to acquire I2C bus access or talk to slave");
+    }
+}
+
+void DisplayController::displayClear() const {
     sendCmd(0x01);  // Clear display
-    delay(2000);    // Delay for clearing to complete
+    delay(2);    // Delay for clearing to complete
 }
 
 void DisplayController::displayString(const char *str) const {
-    while (*str) sendData(*str++);
+    this->displayClear();
+    int charCount = 0;  // Tracks the number of characters printed on the current line
+    int line = 1;       // Start on the first line
+
+    while (*str) {
+        // Check if there is a word boundary and enough space left on the line
+        if (*str == ' ' || *str == '\n') {
+            const char* temp = str + 1;
+            int wordLength = 0;
+
+            // Measure the next word
+            while (*temp != ' ' && *temp != '\0' && *temp != '\n') {
+                temp++;
+                wordLength++;
+            }
+
+            // Check if the word can fit on the current line
+            if (charCount + wordLength >= 20) {
+                // Move to the next line if the word doesn't fit
+                charCount = 0;
+                line++;
+                switch (line) {
+                    case 2:
+                        sendCmd(0xC0); // Second line
+                        break;
+                    case 3:
+                        sendCmd(0x94); // Third line
+                        break;
+                    case 4:
+                        sendCmd(0xD4); // Fourth line
+                        break;
+                    default:
+                        line = 1;
+                        sendCmd(0x80); // Move back to the first line
+                        break;
+                }
+                continue; // Skip the space at the line's start
+            }
+        }
+
+        sendData(*str); // Send character to display
+        charCount++;    // Increment the character count
+        str++;          // Move to the next character
+
+        if (charCount == 20) {  // Check if the line is full
+            charCount = 0;
+            line++;
+            switch (line) {
+                case 2:
+                    sendCmd(0xC0);
+                    break;
+                case 3:
+                    sendCmd(0x94);
+                    break;
+                case 4:
+                    sendCmd(0xD4);
+                    break;
+                default:
+                    line = 1;
+                    sendCmd(0x80);
+                    break;
+            }
+        }
+    }
 }
 
-void DisplayController::sendCmd(char cmd) {
+
+void DisplayController::sendCmd(char cmd) const {
     char data_u = cmd & 0xF0;         // Upper nibble
     char data_l = (cmd << 4) & 0xF0;  // Lower nibble
 
