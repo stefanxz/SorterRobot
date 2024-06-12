@@ -15,7 +15,7 @@ ADCReader::~ADCReader()
     // Close any connections or cleanup if necessary
 }
 
-void ADCReader::configureADC(int config)
+void ADCReader::initADC(int config)
 {
     int msb = (config >> 8) & 0xFF;
     int lsb = config & 0xFF;
@@ -26,11 +26,6 @@ void ADCReader::configureADC(int config)
     }
 }
 
-void ADCReader::initADC(int config)
-{
-    configureADC(config);
-}
-
 int ADCReader::readADCChannel(int channelConfig)
 {
     initADC(channelConfig);
@@ -38,19 +33,39 @@ int ADCReader::readADCChannel(int channelConfig)
     int result = wiringPiI2CReadReg16(fd, 0x00);
     result = ((result & 0xFF) << 8) | ((result >> 8) & 0xFF); // Correct the byte order
 
-    // Adjusting the result interpretation based on actual ADC capabilities
-    // This line needs adjustment according to actual ADC resolution and the required sensitivity
-    return result; // Return raw ADC value to better understand the scale and needed adjustments
+    return result;
+}
+
+std::string ADCReader::detectColor(int value)
+{
+    if (value >= 28 && value <= 40)
+    {
+        return "black";
+    }
+    else if (value >= 59 && value <= 75)
+    {
+        return "white";
+    }
+    else
+    {
+        return "other color";
+    }
 }
 
 void ADCReader::runContinuousRead()
 {
     std::cout << "Starting ADC readings...\n";
-    int configValue = 0xC183; // Example configuration: Adjust according to actual needed setup
+
+    // Set the configuration value to a reasonable gain (±2.048V range for ADS1115)
+    int configValue = 0xC183; // Existing configuration for the ADS1115
+    configValue &= ~0x0E00; // Clear the gain bits
+    configValue |= 0x0200; // Set gain to ±2.048V for a balanced sensitivity
+
     while (true)
     {
         int value = readADCChannel(configValue);
-        std::cout << "ADC value: " << value << '\n'; // Changed to raw value for better calibration
-        usleep(1000000);                             // 1s delay
+        std::string color = detectColor(value);
+        std::cout << "ADC value: " << value << " - Detected color: " << color << '\n';
+        usleep(1000000); // 1 second delay between readings
     }
 }
