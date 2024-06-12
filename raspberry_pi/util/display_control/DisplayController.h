@@ -13,23 +13,33 @@
 #include <iostream>  // For input-output streams
 #include <stdexcept>  // For standard exceptions
 
-
 class DisplayController {
 private:
     int fd; // File descriptor for the I2C device
 
-    void sendCmd(char cmd) const ;
+    // Sends a command to the LCD
+    void sendCmd(char cmd) const;
+
+    // I2C address of the display
     int i2cAddress;
+
+    // Sends data to the LCD
     void sendData(char data) const;
+
+    // Opens the I2C bus
     void openI2CBus(const char* filename, int i2cAddress);
 
 public:
+    // Constructor that initializes the DisplayController with the given I2C address
     explicit DisplayController(int);
 
+    // Initializes the display
     void displayInit();
 
+    // Clears the display
     void displayClear() const;
 
+    // Displays a string on the LCD
     void displayString(const char *str) const;
 };
 

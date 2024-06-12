@@ -3,6 +3,7 @@
 //
 #include "DisplayController.h"
 
+// Constructor for DisplayController
 DisplayController::DisplayController(int i2cAddress) : fd(-1) {
     if (i2cAddress != -1) {  // Check if the address is valid
         openI2CBus("/dev/i2c-0", i2cAddress);  // Open I2C bus 0
@@ -13,6 +14,7 @@ DisplayController::DisplayController(int i2cAddress) : fd(-1) {
     }
 }
 
+// Initialize the display
 void DisplayController::displayInit() {
     sendCmd(0x33);  // Initialize for 4-bit mode
     sendCmd(0x32);  // Set to 4-bit mode
@@ -22,6 +24,7 @@ void DisplayController::displayInit() {
     displayClear();
 }
 
+// Open the I2C bus
 void DisplayController::openI2CBus(const char *filename, int i2cAddress) {
     if ((fd = open(filename, O_RDWR)) < 0) {
         std::cerr << "Failed to open the I2C bus: " << filename << " Error: " << std::strerror(errno) << "\n";
@@ -35,12 +38,14 @@ void DisplayController::openI2CBus(const char *filename, int i2cAddress) {
     }
 }
 
+// Clear the display
 void DisplayController::displayClear() const {
-    std::cout<< "Cleared display" << std::endl;
+    std::cout << "Cleared display" << std::endl;
     sendCmd(0x01);  // Clear display
-    delay(2);    // Delay for clearing to complete
+    delay(2);       // Delay for clearing to complete
 }
 
+// Display a string on the LCD
 void DisplayController::displayString(const char *str) const {
     displayClear();
     int charCount = 0;  // Tracks the number of characters printed on the current line
@@ -108,7 +113,7 @@ void DisplayController::displayString(const char *str) const {
     }
 }
 
-
+// Send a command to the LCD
 void DisplayController::sendCmd(char cmd) const {
     char data_u = cmd & 0xF0;         // Upper nibble
     char data_l = (cmd << 4) & 0xF0;  // Lower nibble
@@ -121,6 +126,7 @@ void DisplayController::sendCmd(char cmd) const {
     delay(2);  // Wait for the command to execute
 }
 
+// Send data to the LCD
 void DisplayController::sendData(char data) const {
     char data_u = data & 0xF0;         // Upper nibble
     char data_l = (data << 4) & 0xF0;  // Lower nibble
