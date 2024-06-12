@@ -18,7 +18,7 @@ public:
     int readADCChannel(int channelConfig); // Reads an ADC channel with the given configuration
     void runContinuousRead();              // Runs continuous ADC readings and prints them
 
-    std::string detectColor(int value);    // Detects color based on ADC value
+    static std::string detectColor(int value);    // Detects color based on ADC value
 
 private:
     int adc_address; // I2C address of the ADC

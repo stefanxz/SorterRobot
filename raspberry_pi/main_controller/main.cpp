@@ -37,10 +37,10 @@ int main() {
     system_init(); // Call system initialization
 
     // Define the IP address of the Arduino
-    std::string arduinoIP = "172.20.10.2";
+    std::string arduinoIP = "172.20.10.12";
 
     // Instantiate SorterRobot with appropriate pin configurations and addresses
-    SorterRobot sorterRobot(13, 15, 11, 24, 26, 23, 37, 0x48, 0x27, 40, 35, 38, 31, 32, 33, arduinoIP);
+    SorterRobot sorterRobot(13, 15, 11, 24, 26, 23, 37, 0x48, 0x27, 19, 7, 38, 31, 32, 33, arduinoIP);
 
     // Setup the robot with ADC configuration
     sorterRobot.robotSetup(0xC183);
@@ -49,4 +49,4 @@ int main() {
     sorterRobot.run();
     return 0; // Exit the program
 }
->>>>>>> comments_for_all_files
+
