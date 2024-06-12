@@ -5,13 +5,15 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN,
                          int firstConveyorIN1, int firstConveyorIN2, int firstConveyorEN,
                          int servoPIN, int adcAddress, int displayAddress, int laserReceiverHeightPIN,
                          int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN, int laserTransmitterBlackPIN,
-                         int laserTransmitterWhitePIN, int laserTransmitterColorPIN, const std::string &carControllerBaseUrl)
-    : motorController(motorIN1, motorIN2, motorEN), firstConveyor(firstConveyorIN1, firstConveyorIN2, firstConveyorEN),
-      servoController(servoPIN), adcReader(adcAddress), displayController(displayAddress),
-      laserReceiverHeight(laserReceiverHeightPIN), laserReceiverWidth(laserReceiverWidthPIN),
-      laserReceiverCarDetection(laserReceiverCarDetectionPIN), laserTransmitterBlack(laserTransmitterBlackPIN),
-      laserTransmitterWhite(laserTransmitterWhitePIN), laserTransmitterColor(laserTransmitterColorPIN),
-      carController(carControllerBaseUrl) {
+                         int laserTransmitterWhitePIN, int laserTransmitterColorPIN,
+                         const std::string &carControllerBaseUrl)
+        : motorController(motorIN1, motorIN2, motorEN),
+          firstConveyor(firstConveyorIN1, firstConveyorIN2, firstConveyorEN),
+          servoController(servoPIN), adcReader(adcAddress), displayController(displayAddress),
+          laserReceiverHeight(laserReceiverHeightPIN), laserReceiverWidth(laserReceiverWidthPIN),
+          laserReceiverCarDetection(laserReceiverCarDetectionPIN), laserTransmitterBlack(laserTransmitterBlackPIN),
+          laserTransmitterWhite(laserTransmitterWhitePIN), laserTransmitterColor(laserTransmitterColorPIN),
+          carController(carControllerBaseUrl) {
     // Initialize the state to IDLE
     currentState = IDLE;
 }
@@ -97,7 +99,7 @@ int SorterRobot::getDisksInTube() const {
 
 // Setup the robot with the given ADC configuration
 void SorterRobot::robotSetup(int adcConfig) {
-    adcReader.setup(adcConfig);
+    adcReader.initADC(adcConfig);
 }
 
 // Handle the height laser sensor logic
@@ -359,5 +361,25 @@ void SorterRobot::run() {
         }
 
         usleep(10000);  // Sleep to prevent high CPU usage
+    }
+}
+
+void SorterRobot::handleGateLasers(int gateNumber) {
+    switch (gateNumber) {
+        case 1:
+            getLaserTransmitterBlack().turnOff();
+            getLaserTransmitterColor().turnOff();
+            getLaserTransmitterWhite().turnOn();
+            break;
+        case 2:
+            getLaserTransmitterWhite().turnOff();
+            getLaserTransmitterColor().turnOff();
+            getLaserTransmitterBlack().turnOn();
+            break;
+        case 3:
+            getLaserTransmitterBlack().turnOff();
+            getLaserTransmitterWhite().turnOff();
+            getLaserTransmitterColor().turnOn();
+            break;
     }
 }

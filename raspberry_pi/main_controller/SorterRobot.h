@@ -74,6 +74,7 @@ public:
     void handleCarDetectionLaser(unsigned long currentTime);
     void handleDiskTimeout(unsigned long currentTime);
     void resetAfterDriving(unsigned long currentTime);
+    void handleGateLasers(int gateNumber);
 
     // Main method to run the robot
     void run();
@@ -97,21 +98,21 @@ private:
     State currentState = IDLE;
 
     // Pins and addresses for the components
-    int firstConveyorIN1;
-    int firstConveyorIN2;
-    int firstConveyorEN;
-    int motorIN1;
-    int motorIN2;
-    int motorEN;
-    int servoPIN;
-    int adcAddress;
-    int displayAddress;
-    int laserReceiverHeightPIN;
-    int laserReceiverWidthPIN;
-    int laserReceiverCarDetectionPIN;
-    int laserTransmitterBlackPIN;
-    int laserTransmitterWhitePIN;
-    int laserTransmitterColorPIN;
+    int firstConveyorIN1{};
+    int firstConveyorIN2{};
+    int firstConveyorEN{};
+    int motorIN1{};
+    int motorIN2{};
+    int motorEN{};
+    int servoPIN{};
+    int adcAddress{};
+    int displayAddress{};
+    int laserReceiverHeightPIN{};
+    int laserReceiverWidthPIN{};
+    int laserReceiverCarDetectionPIN{};
+    int laserTransmitterBlackPIN{};
+    int laserTransmitterWhitePIN{};
+    int laserTransmitterColorPIN{};
     int disksInTube{};
 
     // Variables to keep track of times for various actions
@@ -125,6 +126,7 @@ private:
     unsigned long stopTime = 0;
     unsigned long diskTimeoutStartTime = 0;
     unsigned long carReadyCheckTime = 0;
+    unsigned long carReadyCheckStartTime = 0; // Track the start time of the car readiness check
 
     // Flags to indicate various conditions
     bool laserWidthBlocked = false;
@@ -162,6 +164,10 @@ private:
     const unsigned long pistonTime = 1500;
     const unsigned long diskTimeoutThreshold = 2000;
     const unsigned long carReadyCheckInterval = 500;
+
+    //Flags for displaying stuck messages
+    bool stuckMessageDisplayedAtHeight = false;
+    bool stuckMessageDisplayedAtWidth = false;
 };
 
 #endif //SORTERROBOT_SORTERROBOT_H
