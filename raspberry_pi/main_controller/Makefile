@@ -1,6 +1,8 @@
 # Compiler settings - Can be customized.
 CC = g++
+
 CFLAGS = -I../../util -I../network -lwiringPi
+
 
 # Define the directories relative to the Makefile location.
 SRC_DIR = .
@@ -12,6 +14,9 @@ MOTOR_CONTROL_DIR = $(UTIL_DIR)/motor_control
 SERVO_CONTROL_DIR = $(UTIL_DIR)/servo_control
 LASER_SENSOR_DIR = $(UTIL_DIR)/laser_sensor
 LASER_TRANSMITTER_DIR = $(UTIL_DIR)/laser_transmitter
+
+# Include directories
+INCLUDES = -I$(UTIL_DIR) -I$(DISPLAY_DIR) -I$(LIGHT_SENSOR_DIR) -I$(MOTOR_CONTROL_DIR) -I$(SERVO_CONTROL_DIR) -I$(LASER_SENSOR_DIR)
 
 # Define all object files.
 OBJ = main.o \
@@ -34,6 +39,30 @@ $(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) -lcurl
 
 # Main file
+
+main.o: $(SRC_DIR)/main.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+
+# Display Controller
+DisplayController.o: $(DISPLAY_DIR)/DisplayController.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+
+# ADC Reader
+ADCReader.o: $(LIGHT_SENSOR_DIR)/ADCReader.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+
+# Motor Controller
+MotorController.o: $(MOTOR_CONTROL_DIR)/MotorController.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+
+# Servo Controller
+Servo.o: $(SERVO_CONTROL_DIR)/Servo.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+
+# Laser Receiver
+LaserReceiver.o: $(LASER_SENSOR_DIR)/LaserReceiver.cpp
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+  
 main.o: $(SRC_DIR)/main.cpp $(SRC_DIR)/SorterRobot.h $(SERVO_CONTROL_DIR)/ServoController.h $(NETWORK_DIR)/CarController.h
 	@echo "Compiling main.o..."
 	$(CC) -c $< -o $@ $(CFLAGS)

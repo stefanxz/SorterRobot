@@ -17,8 +17,7 @@ ADCReader::~ADCReader()
     // Close any connections or cleanup if necessary
 }
 
-// Method to configure the ADC with a given configuration value
-void ADCReader::configureADC(int config)
+void ADCReader::initADC(int config)
 {
     // Extract the most significant and least significant bytes from the config value
     int msb = (config >> 8) & 0xFF;
@@ -49,24 +48,39 @@ int ADCReader::readADCChannel(int channelConfig)
     // Read the conversion result from the ADC's data register (0x00)
     int result = wiringPiI2CReadReg16(fd, 0x00);
 
-    // Correct the byte order of the result
-    result = ((result & 0xFF) << 8) | ((result >> 8) & 0xFF);
-
-    // Return the raw ADC value
     return result;
+}
+
+std::string ADCReader::detectColor(int value)
+{
+    if (value >= 28 && value <= 40)
+    {
+        return "black";
+    }
+    else if (value >= 59 && value <= 75)
+    {
+        return "white";
+    }
+    else
+    {
+        return "other color";
+    }
 }
 
 // Method to run continuous ADC readings and print the values
 void ADCReader::runContinuousRead()
 {
     std::cout << "Starting ADC readings...\n";
-    int configValue = 0xC183; // Example configuration: Adjust according to actual needed setup
+    // Set the configuration value to a reasonable gain (±2.048V range for ADS1115)
+    int configValue = 0xC183; // Existing configuration for the ADS1115
+    configValue &= ~0x0E00; // Clear the gain bits
+    configValue |= 0x0200; // Set gain to ±2.048V for a balanced sensitivity
 
-    // Continuously read and print ADC values
     while (true)
     {
-        int value = readADCChannel(configValue); // Read a value from the ADC
-        std::cout << "ADC value: " << value << '\n'; // Print the raw ADC value
-        usleep(1000000); // Wait for 1 second before the next reading
+        int value = readADCChannel(configValue);
+        std::string color = detectColor(value);
+        std::cout << "ADC value: " << value << " - Detected color: " << color << '\n';
+        usleep(1000000); // 1 second delay between readings
     }
 }

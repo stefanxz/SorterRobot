@@ -1,4 +1,5 @@
 #include <iostream>
+#include "../util/light_sensor/ADCReader.h"
 #include <sstream> // For stringstream
 #include <wiringPi.h>
 #include <softPwm.h>
@@ -46,6 +47,6 @@ int main() {
 
     // Run the main control loop of the sorter robot
     sorterRobot.run();
-
     return 0; // Exit the program
 }
+>>>>>>> comments_for_all_files
