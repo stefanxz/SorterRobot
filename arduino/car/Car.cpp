@@ -64,9 +64,10 @@ void Car::driveBackward()
     analogWrite(motor2PWM, speed);
 }
 
-void Car::driveToGate(int gate)
+void Car::driveToGate(int newGate)
 {
     driveForward();
+    gate = newGate;
 }
 
 void Car::stopMotors()
@@ -139,4 +140,8 @@ void Car::updateServo(Servo &servo) {
 
 bool Car::isDropoffInProgress() {
     return dropoffState != IDLE;
+}
+
+int Car::getGate() {
+    return gate;
 }
