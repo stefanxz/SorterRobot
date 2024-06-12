@@ -33,7 +33,9 @@ void system_init() {
     std::cout << "System init done!" << '\n';
 }
 
+
 int main() {
+    int adcConfig = 0xC183;
     system_init(); // Call system initialization
 
     // Define the IP address of the Arduino
@@ -43,7 +45,7 @@ int main() {
     SorterRobot sorterRobot(13, 15, 11, 24, 26, 23, 37, 0x48, 0x27, 19, 7, 38, 31, 32, 33, arduinoIP);
 
     // Setup the robot with ADC configuration
-    sorterRobot.robotSetup(0xC183);
+    sorterRobot.robotSetup(adcConfig);
 
     // Run the main control loop of the sorter robot
     sorterRobot.run();
