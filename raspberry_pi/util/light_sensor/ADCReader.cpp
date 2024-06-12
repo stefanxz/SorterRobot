@@ -1,56 +1,65 @@
 #include "ADCReader.h"
 
-ADCReader::ADCReader(int address) : adc_address(address)
-{
-    wiringPiSetup();
-    fd = wiringPiI2CSetup(adc_address);
-    if (fd == -1)
-    {
-        std::cerr << "Failed to init I2C communication.\n";
+// Constructor to initialize the ADCReader with a specific I2C address
+ADCReader::ADCReader(int address) : adc_address(address) {
+    fd = wiringPiI2CSetup(adc_address); // Setup I2C communication with the ADC
+    if (fd == -1) {
+        std::cerr << "Failed to init I2C communication.\n"; // Error message if I2C setup fails
     }
 }
 
-ADCReader::~ADCReader()
-{
-    // Close any connections or cleanup if necessary
-}
+// Destructor
+ADCReader::~ADCReader() {}
 
-void ADCReader::configureADC(int config)
-{
+void ADCReader::initADC(int config) {
+    // Extract the most significant and least significant bytes from the config value
     int msb = (config >> 8) & 0xFF;
     int lsb = config & 0xFF;
+
+    // Combine the bytes in the correct order for transmission
     int config_to_send = (lsb << 8) | msb;
-    if (wiringPiI2CWriteReg16(fd, 0x01, config_to_send) == -1)
-    {
-        std::cerr << "Failed to write configuration.\n";
+
+    // Write the configuration to the ADC's config register (0x01)
+    if (wiringPiI2CWriteReg16(fd, 0x01, config_to_send) == -1) {
+        std::cerr << "Failed to write configuration.\n"; // Error message if the configuration write fails
     }
 }
 
-void ADCReader::initADC(int config)
-{
-    configureADC(config);
-}
 
-int ADCReader::readADCChannel(int channelConfig)
-{
-    initADC(channelConfig);
-    usleep(9000); // Wait for conversion to complete
+// Method to read a value from a specific ADC channel with a given configuration
+int ADCReader::readADCChannel(int channelConfig) {
+    initADC(channelConfig); // Initialize the ADC with the channel configuration
+    usleep(9000); // Wait for the ADC conversion to complete (9ms)
+
+    // Read the conversion result from the ADC's data register (0x00)
     int result = wiringPiI2CReadReg16(fd, 0x00);
-    result = ((result & 0xFF) << 8) | ((result >> 8) & 0xFF); // Correct the byte order
 
-    // Adjusting the result interpretation based on actual ADC capabilities
-    // This line needs adjustment according to actual ADC resolution and the required sensitivity
-    return result; // Return raw ADC value to better understand the scale and needed adjustments
+    return result;
 }
 
-void ADCReader::runContinuousRead()
-{
+
+std::string ADCReader::detectColor(int value) {
+    if (value >= 28 && value <= 40) {
+        return "black";
+    } else if (value >= 59 && value <= 75) {
+        return "white";
+    } else {
+        return "other color";
+    }
+}
+
+// Method to run continuous ADC readings and print the values
+void ADCReader::runContinuousRead() {
     std::cout << "Starting ADC readings...\n";
-    int configValue = 0xC183; // Example configuration: Adjust according to actual needed setup
-    while (true)
-    {
+    // Set the configuration value to a reasonable gain (±2.048V range for ADS1115)
+    int configValue = 0xC183; // Existing configuration for the ADS1115
+    configValue &= ~0x0E00; // Clear the gain bits
+    configValue |= 0x0200; // Set gain to ±2.048V for a balanced sensitivity
+
+    while (true) {
         int value = readADCChannel(configValue);
-        std::cout << "ADC value: " << value << '\n'; // Changed to raw value for better calibration
-        usleep(1000000);                             // 1s delay
+        std::string color = detectColor(value);
+        std::cout << "ADC value: " << value << " - Detected color: " << color << '\n';
+        usleep(1000000); // 1 second delay between readings
     }
 }

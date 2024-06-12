@@ -4,22 +4,43 @@
 #include <iostream>
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
+#include <fcntl.h>  // For file control definitions
+#include <unistd.h>  // For UNIX standard function definitions
+#include <sys/ioctl.h>  // For IOCTLs
+#include <linux/i2c-dev.h>  // For the I2C device definitions
+#include <cerrno>  // For error number definitions
+#include <cstring>  // For strerror()
+#include <iostream>  // For input-output streams
+#include <stdexcept>  // For standard exceptions
 
 class DisplayController {
 private:
     int fd; // File descriptor for the I2C device
-    void sendCmd(char cmd);
 
-    void sendData(char data);
+    // Sends a command to the LCD
+    void sendCmd(char cmd) const;
+
+    // I2C address of the display
+    int i2cAddress;
+
+    // Sends data to the LCD
+    void sendData(char data) const;
+
+    // Opens the I2C bus
+    void openI2CBus(const char* filename, int i2cAddress);
 
 public:
-    explicit DisplayController(int i2cAddress);
+    // Constructor that initializes the DisplayController with the given I2C address
+    explicit DisplayController(int);
 
+    // Initializes the display
     void displayInit();
 
-    void displayClear();
+    // Clears the display
+    void displayClear() const;
 
-    void displayString(const char *str);
+    // Displays a string on the LCD
+    void displayString(const char *str) const;
 };
 
 #endif // DISPLAYCONTROLLER_H

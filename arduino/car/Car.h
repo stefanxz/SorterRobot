@@ -6,32 +6,41 @@
 class Car
 {
 public:
-  Car();                                // Constructor to initialize the pins and setup
-  void driveForward(int milliseconds);  // Drive forward for a specified number of milliseconds
-  void driveForward();
-  void driveBackward(int milliseconds); // Drive backward for a specified number of milliseconds
-  void driveBackward();
-  void driveToGate(int gate);  
-  void stopMotors();  
-  void setSpeed(int newSpeed);
-  bool isReady();
-  void handleDropoff(Servo &servo);
-  void setReady(bool car_ready);
+    Car();                                // Constructor to initialize the pins and setup
+    void driveForward(int milliseconds);  // Drive forward for a specified number of milliseconds
+    void driveForward();
+    void driveBackward(int milliseconds); // Drive backward for a specified number of milliseconds
+    void driveBackward();
+    void driveToGate(int gate);
+    void stopMotors();
+    void setSpeed(int newSpeed);
+    bool isReady();
+    void handleDropoff(Servo &servo);
+    void updateServo(Servo &servo);
+    bool isDropoffInProgress();
+    void setReady(bool car_ready);
+    int getGate();
 
 private:
-  void setupMotors();
+    void setupMotors();
 
-  // Motor pins
-  const int motor1Pin1 = 7;
-  const int motor1Pin2 = 8;
-  const int motor1PWM = 9;
+    enum DropoffState { IDLE, MOVING_TO_DROP, WAITING_AT_DROP, MOVING_BACK, DONE };
+    DropoffState dropoffState = IDLE;
+    unsigned long dropoffStartTime = 0;
+    const unsigned long servoMoveDuration = 1000; // Duration for each servo move
 
-  const int motor2Pin1 = 10;
-  const int motor2Pin2 = 11;
-  const int motor2PWM = 12;
+    // Motor pins
+    const int motor1Pin1 = 7;
+    const int motor1Pin2 = 8;
+    const int motor1PWM = 9;
 
-  int speed = 75;
-  bool ready = true;
+    const int motor2Pin1 = 10;
+    const int motor2Pin2 = 11;
+    const int motor2PWM = 12;
+
+    int gate;
+    int speed = 75;
+    bool ready = true;
 };
 
 #endif

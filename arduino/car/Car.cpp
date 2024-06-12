@@ -64,9 +64,10 @@ void Car::driveBackward()
     analogWrite(motor2PWM, speed);
 }
 
-void Car::driveToGate(int gate)
+void Car::driveToGate(int newGate)
 {
     driveForward();
+    gate = newGate;
 }
 
 void Car::stopMotors()
@@ -98,12 +99,49 @@ void Car::setReady(bool car_ready)
     ready = car_ready;
 }
 
-void Car::handleDropoff(Servo &servo)
-{
+void Car::handleDropoff(Servo &servo) {
     stopMotors();
-    servo.write(160);
-    delay(2000);
-    servo.write(0);
-    delay(2000);
-    driveBackward();
+    dropoffState = MOVING_TO_DROP;
+    dropoffStartTime = millis();
+    servo.write(160); // Start moving the servo to drop position
+}
+
+void Car::updateServo(Servo &servo) {
+    unsigned long currentTime = millis();
+
+    switch (dropoffState) {
+        case MOVING_TO_DROP:
+            if (currentTime - dropoffStartTime >= servoMoveDuration) {
+                dropoffState = WAITING_AT_DROP;
+                dropoffStartTime = currentTime; // Reset the timer
+            }
+            break;
+        case WAITING_AT_DROP:
+            if (currentTime - dropoffStartTime >= servoMoveDuration / 2) { // Reduce waiting time at drop position
+                servo.write(0); // Move the servo back after waiting
+                dropoffState = MOVING_BACK;
+                dropoffStartTime = currentTime; // Reset the timer
+            }
+            break;
+        case MOVING_BACK:
+            if (currentTime - dropoffStartTime >= servoMoveDuration) {
+                driveBackward(); // Start driving backward after the servo has moved back
+                dropoffState = DONE;
+            }
+            break;
+        case DONE:
+            dropoffState = IDLE;
+            break;
+        case IDLE:
+        default:
+            break;
+    }
+}
+
+bool Car::isDropoffInProgress() {
+    return dropoffState != IDLE;
+}
+
+int Car::getGate() {
+    return gate;
 }
