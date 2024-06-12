@@ -9,8 +9,7 @@
 #include <numeric>
 #include <cmath>
 
-class ADCReader
-{
+class ADCReader {
 public:
     explicit ADCReader(int address = 0x48); // Constructor with default I2C address
     ~ADCReader();                           // Destructor
