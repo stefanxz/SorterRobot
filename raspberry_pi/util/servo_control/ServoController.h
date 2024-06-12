@@ -6,24 +6,17 @@
 #include <iostream>
 #include <unistd.h>
 
-// Define the default piston time
-#define PISTONTIME 1500000
-
 class ServoController {
 public:
-    explicit ServoController(int pin);  // Constructor
-    ~ServoController();  // Destructor
+    ServoController(int pin);
+    ~ServoController();
 
-    void movePiston() const;  // Default time parameter
+    void pushPiston();
+    void pullPiston();
+    void stopPiston();
 
 private:
-    void pushPiston() const;  // Push piston for specified time
-    void pullPiston() const;  // Pull piston for specified time
-    void pausePiston() const;
-
-    int pin;  // GPIO pin number
-    int pwmMin, pwmMax;  // PWM range
-    int time = PISTONTIME;
+    int pin;
 };
 
 #endif // SERVO_H
