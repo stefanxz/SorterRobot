@@ -24,7 +24,6 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN, int firstConve
           laserReceiverCarDetection(laserReceiverCarDetectionPIN), laserTransmitterBlack(laserTransmitterBlackPIN),
           laserTransmitterWhite(laserTransmitterWhitePIN), laserTransmitterColor(laserTransmitterColorPIN),
           carController(carControllerBaseUrl) {
-    // Initialization debug messages...
 }
 
 MotorController &SorterRobot::getMotorController() { return motorController; }
@@ -113,7 +112,7 @@ void SorterRobot::robotSetup(int adcConfig) {
 }
 
 void SorterRobot::laserControlSystem(int gateNumber) {
-    switch(gateNumber){
+    switch (gateNumber) {
         case 1:
             laserTransmitterWhite.turnOn();
             laserTransmitterColor.turnOff();
