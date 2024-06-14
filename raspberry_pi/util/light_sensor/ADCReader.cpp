@@ -44,7 +44,7 @@ std::string ADCReader::detectColor(int value) {
     } else if (value >= 59 && value <= 75) {
         return "white";
     } else {
-        return "other color";
+        return "other";
     }
 }
 

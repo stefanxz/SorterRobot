@@ -138,3 +138,25 @@ void DisplayController::sendData(char data) const {
 
     delay(2);  // Wait for the data to be processed
 }
+
+
+void DisplayController::displayDisk(std::string disk) const {
+    displayClear();
+    // If disk is "white", display Gate: 1 and on the next row Color: "white"
+    // If disk is "black", display Gate: 2 and on the next row Color: "black"
+    // If disk is "other color", display Gate: 3 and on the next row Color: "other"
+
+    if (disk == "white") {
+        displayString("Gate: 1");
+        sendCmd(0xC0);
+        displayString("Color: white");
+    } else if (disk == "black") {
+        displayString("Gate: 2");
+        sendCmd(0xC0);
+        displayString("Color: black");
+    } else {
+        displayString("Gate: 3");
+        sendCmd(0xC0);
+        displayString("Color: other");
+    }
+}

@@ -41,6 +41,8 @@ public:
 
     // Displays a string on the LCD
     void displayString(const char *str) const;
+
+    void displayDisk(std::string disk) const;
 };
 
 #endif // DISPLAYCONTROLLER_H

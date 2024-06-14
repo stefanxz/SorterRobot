@@ -182,10 +182,13 @@ void SorterRobot::handleDiskSettling(unsigned long currentTime) {
 // Handle the color sensing logic
 void SorterRobot::handleColorSensing(unsigned long currentTime) {
     if (colorSensingInProgress) {  // Check if color sensing is currently in progress
-        if (colorReadings < 3) {  // Perform three color readings
+        if (colorReadings < 1) {  // Perform three color readings
             if (!colorDelayInProgress) {  // Check if delay between readings is not in progress
                 // Perform a color reading
                 std::cout << "Performing color reading " << (colorReadings + 1) << std::endl;
+                int colorValue = getAdcReader().readADCChannel(0xC183);  // Read the color value
+                std::string color = getAdcReader().detectColor(colorValue);  // Detect the color
+                getDisplayController().displayDisk(color);  // Display the color on the screen
                 colorReadings++;  // Increment the count of readings performed
                 colorDelayInProgress = true;  // Set the delay in progress flag
                 colorDelayStartTime = currentTime;  // Record the start time of the delay
