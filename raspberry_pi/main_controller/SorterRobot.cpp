@@ -182,12 +182,13 @@ void SorterRobot::handleDiskSettling(unsigned long currentTime) {
 // Handle the color sensing logic
 void SorterRobot::handleColorSensing(unsigned long currentTime) {
     if (colorSensingInProgress) {  // Check if color sensing is currently in progress
-        if (colorReadings < 1) {  // Perform three color readings
+        if (colorReadings < 1) {  // Perform one color readings
             if (!colorDelayInProgress) {  // Check if delay between readings is not in progress
                 // Perform a color reading
                 std::cout << "Performing color reading " << (colorReadings + 1) << std::endl;
                 int colorValue = getAdcReader().readADCChannel(0xC183);  // Read the color value
                 std::string color = getAdcReader().detectColor(colorValue);  // Detect the color
+                gateNumber = getGateNumberFromColor(color);  // Get the gate number for the color
                 getDisplayController().displayDisk(color);  // Display the color on the screen
                 colorReadings++;  // Increment the count of readings performed
                 colorDelayInProgress = true;  // Set the delay in progress flag
@@ -218,6 +219,7 @@ void SorterRobot::handleColorSensing(unsigned long currentTime) {
         }
     }
 }
+
 
 // Handle the piston operation logic
 void SorterRobot::handlePistonOperation(unsigned long currentTime) {
@@ -270,8 +272,18 @@ void SorterRobot::handleCarDetectionLaser(unsigned long currentTime) {
         carDetectionLaserBlocked = false;
         carDetectionLaserCleared = true;
         diskPassedWidthFilter = false;  // Reset the flag after the disk has been detected
+
+        // Send drive request to the car
+        if (!driveRequestSent) {
+            getCarController().drive(gateNumber);
+            driveRequestSent = true;
+            std::cout << "Drive request sent at time: " << currentTime << std::endl;
+        }
+
+        currentState = RESET_AFTER_DRIVING;  // Move to reset state after driving
     }
 }
+
 
 // Handle the disk timeout logic
 void SorterRobot::handleDiskTimeout(unsigned long currentTime) {
@@ -384,5 +396,15 @@ void SorterRobot::handleGateLasers(int gateNumber) {
             getLaserTransmitterWhite().turnOff();
             getLaserTransmitterColor().turnOn();
             break;
+    }
+}
+
+int SorterRobot::getGateNumberFromColor(const std::string &color) {
+    if (color == "white") {
+        return 1;
+    } else if (color == "black") {
+        return 2;
+    } else {
+        return 3;
     }
 }

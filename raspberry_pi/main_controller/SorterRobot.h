@@ -75,6 +75,7 @@ public:
     void handleDiskTimeout(unsigned long currentTime);
     void resetAfterDriving(unsigned long currentTime);
     void handleGateLasers(int gateNumber);
+	int getGateNumberFromColor(const std::string &color);
 
     // Main method to run the robot
     void run();
