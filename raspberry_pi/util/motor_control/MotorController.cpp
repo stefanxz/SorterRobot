@@ -33,7 +33,7 @@ void MotorController::stop() {
 // Changes the PWM speed
 void MotorController::changeSpeed() const {
     softPwmWrite(en, this->speed);
-    std::cout << "Speed ch+anged to " << speed << "%" << std::endl;
+    std::cout << "Speed changed to " << speed << "%" << std::endl;
 }
 
 // Changes the PWM speed to a specified slower speed
