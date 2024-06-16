@@ -20,107 +20,93 @@ SorterRobot::SorterRobot(int motorIN1, int motorIN2, int motorEN,
 
 // Accessor methods for various controllers
 
-// Return the motor controller
 MotorController &SorterRobot::getMotorController() {
     return motorController;
 }
 
-// Return the first conveyor controller
 MotorController &SorterRobot::getFirstConveyor() {
     return firstConveyor;
 }
 
-// Return the servo controller
 ServoController &SorterRobot::getServoController() {
     return servoController;
 }
 
-// Return the ADC reader
 ADCReader &SorterRobot::getAdcReader() {
     return adcReader;
 }
 
-// Return the display controller
 DisplayController &SorterRobot::getDisplayController() {
     return displayController;
 }
 
-// Return the height laser receiver
 LaserReceiver &SorterRobot::getLaserReceiverHeight() {
     return laserReceiverHeight;
 }
 
-// Return the width laser receiver
 LaserReceiver &SorterRobot::getLaserReceiverWidth() {
     return laserReceiverWidth;
 }
 
-// Return the car detection laser receiver
 LaserReceiver &SorterRobot::getLaserReceiverCarDetection() {
     return laserReceiverCarDetection;
 }
 
-// Return the black laser transmitter
 LaserTransmitter &SorterRobot::getLaserTransmitterBlack() {
     return laserTransmitterBlack;
 }
 
-// Return the white laser transmitter
 LaserTransmitter &SorterRobot::getLaserTransmitterWhite() {
     return laserTransmitterWhite;
 }
 
-// Return the color laser transmitter
 LaserTransmitter &SorterRobot::getLaserTransmitterColor() {
     return laserTransmitterColor;
 }
 
-// Return the car controller
 CarController &SorterRobot::getCarController() {
     return carController;
 }
 
-// Increment the count of disks in the tube
 void SorterRobot::incrementDisksInTube() {
     disksInTube++;
 }
 
-// Decrement the count of disks in the tube if greater than zero
 void SorterRobot::decrementDisksInTube() {
     if (disksInTube > 0) {
         disksInTube--;
     }
 }
 
-// Get the current count of disks in the tube
 int SorterRobot::getDisksInTube() const {
     return disksInTube;
 }
 
-// Setup the robot with the given ADC configuration
 void SorterRobot::robotSetup(int adcConfig) {
+    firstConveyor.setup();
+    motorController.setup();
+    displayController.displayInit();
     adcReader.initADC(adcConfig);
+    firstConveyor.slowerDaddy(50);
+    firstConveyor.run(true);
 }
 
-// Handle the height laser sensor logic
 void SorterRobot::handleHeightLaser(unsigned long currentTime) {
     bool heightLaserDetected = getLaserReceiverHeight().isLaserDetected();
     if (!laserHeightBlocked && !heightLaserDetected && !objectStuckAtHeight) {
-        // Laser is blocked for the first time
         laserHeightBlocked = true;
         laserHeightBlockedTime = currentTime;
         std::cout << "Height Laser Blocked at time: " << currentTime << std::endl;
         currentState = HEIGHT_LASER_BLOCKED;
     } else if (laserHeightBlocked && heightLaserDetected) {
-        // Laser is cleared
         laserHeightBlocked = false;
         objectStuckAtHeight = false;
         stuckMessageDisplayedAtHeight = false;
         std::cout << "Height Laser Cleared at time: " << currentTime << std::endl;
+        getDisplayController().displayClear();
         currentState = IDLE;
     } else if (laserHeightBlocked && !heightLaserDetected &&
                currentTime - laserHeightBlockedTime >= stuckThreshold && !stuckMessageDisplayedAtHeight) {
-        // Object is stuck at the height laser
         getDisplayController().displayString("Object Stuck at Height Laser");
         objectStuckAtHeight = true;
         stuckMessageDisplayedAtHeight = true;
@@ -128,23 +114,20 @@ void SorterRobot::handleHeightLaser(unsigned long currentTime) {
     }
 }
 
-// Handle the width laser sensor logic
 void SorterRobot::handleWidthLaser(unsigned long currentTime) {
     bool widthLaserDetected = getLaserReceiverWidth().isLaserDetected();
     if (!laserWidthBlocked && !widthLaserDetected && !objectStuckAtWidth) {
-        // Laser is blocked for the first time
         laserWidthBlocked = true;
         laserWidthBlockedTime = currentTime;
-        forcedClear = false; // Reset forced clear on new blockage
+        forcedClear = false;
         std::cout << "Width Laser Blocked at time: " << currentTime << std::endl;
         currentState = WIDTH_LASER_BLOCKED;
     } else if (laserWidthBlocked && widthLaserDetected) {
-        // Laser is cleared
         if (!objectStuckAtWidth && !forcedClear) {
             incrementDisksInTube();
             diskFalling = true;
             diskFallStartTime = currentTime;
-            diskPassedWidthFilter = true;  // Indicate that a disk has passed the width filter
+            diskPassedWidthFilter = true;
             std::cout << "Disk falling initiated at time: " << currentTime << std::endl;
             currentState = DISK_FALLING;
         }
@@ -152,25 +135,22 @@ void SorterRobot::handleWidthLaser(unsigned long currentTime) {
         objectStuckAtWidth = false;
         stuckMessageDisplayedAtWidth = false;
         std::cout << "Width Laser Cleared at time: " << currentTime << std::endl;
+        getDisplayController().displayClear();
     } else if (laserWidthBlocked && !widthLaserDetected && currentTime - laserWidthBlockedTime >= stuckThreshold &&
                !stuckMessageDisplayedAtWidth) {
-        // Object is stuck at the width laser
         getDisplayController().displayString("Object Stuck at Width Laser");
         objectStuckAtWidth = true;
         stuckMessageDisplayedAtWidth = true;
-        forcedClear = true; // Indicate manual removal needed
+        forcedClear = true;
         std::cout << "Object Stuck at Width Laser at time: " << currentTime << std::endl;
     }
 }
 
-// Handle the disk settling logic
 void SorterRobot::handleDiskSettling(unsigned long currentTime) {
     if (diskFalling && currentTime - diskFallStartTime >= diskFallTime) {
-        // Disk has settled
         diskFalling = false;
         std::cout << "Disk settled at time: " << currentTime << std::endl;
         if (!objectStuckAtWidth && !forcedClear) {
-            // Start color sensing
             colorSensingInProgress = true;
             colorReadings = 0;
             std::cout << "Color sensing initiated at time: " << currentTime << std::endl;
@@ -179,128 +159,116 @@ void SorterRobot::handleDiskSettling(unsigned long currentTime) {
     }
 }
 
-// Handle the color sensing logic
 void SorterRobot::handleColorSensing(unsigned long currentTime) {
-    if (colorSensingInProgress) {  // Check if color sensing is currently in progress
-        if (colorReadings < 1) {  // Perform one color readings
-            if (!colorDelayInProgress) {  // Check if delay between readings is not in progress
-                // Perform a color reading
+    if (colorSensingInProgress) {
+        if (colorReadings < 1) {
+            if (!colorDelayInProgress) {
                 std::cout << "Performing color reading " << (colorReadings + 1) << std::endl;
-                int colorValue = getAdcReader().readADCChannel(0xC183);  // Read the color value
-                std::string color = getAdcReader().detectColor(colorValue);  // Detect the color
-                gateNumber = getGateNumberFromColor(color);  // Get the gate number for the color
-                getDisplayController().displayDisk(color);  // Display the color on the screen
-                colorReadings++;  // Increment the count of readings performed
-                colorDelayInProgress = true;  // Set the delay in progress flag
-                colorDelayStartTime = currentTime;  // Record the start time of the delay
+                int colorValue = getAdcReader().readADCChannel(0xC183);
+                std::string color = getAdcReader().detectColor(colorValue);
+                std::cout << "Color value: " << colorValue << std::endl;
+                gateNumber = getGateNumberFromColor(color);
+                getDisplayController().displayDisk(color);
+                colorReadings++;
+                colorDelayInProgress = true;
+                colorDelayStartTime = currentTime;
             } else if (currentTime - colorDelayStartTime >= colorDelayTime) {
-                // If the delay time has passed, reset the delay flag
                 colorDelayInProgress = false;
             }
         } else if (!carReadyCheckInProgress) {
-            // After three readings, check if the car readiness check is in progress
-            // If not, start the car readiness check process
             carReadyCheckInProgress = true;
-            carReadyCheckStartTime = currentTime;  // Record the start time for the car readiness check
+            carReadyCheckStartTime = currentTime;
         } else if (currentTime - carReadyCheckStartTime >= carReadyCheckInterval) {
-            // If the car readiness check interval has passed, proceed to check if the car is ready
-            carReadyCheckStartTime = currentTime;  // Update the start time for the next check
+            carReadyCheckStartTime = currentTime;
             if (getCarController().isCarReady()) {
-                // If the car is ready, start the conveyor and piston operations
                 startConveyor = true;
-                getMotorController().run(true);  // Start the conveyor motor
+                getMotorController().run(true);
                 conveyorRunning = true;
                 std::cout << "Conveyor started at time: " << currentTime << std::endl;
-                carOccupied = true;  // Mark the car as occupied
-                carReadyCheckInProgress = false;  // Reset the car readiness check flag
-                colorSensingInProgress = false;  // Reset the color sensing flag for the next cycle
-                currentState = PISTON_OPERATION;  // Move to the piston operation state
+                carOccupied = true;
+                carReadyCheckInProgress = false;
+                colorSensingInProgress = false;
+                currentState = PISTON_OPERATION;
             }
         }
     }
 }
 
-
-// Handle the piston operation logic
 void SorterRobot::handlePistonOperation(unsigned long currentTime) {
+    // Check if the conveyor has started and the piston operation is due
     if (startConveyor) {
+        // Condition to push the piston
         if (!pushDone && !pullDone && currentTime - stopTime >= pistonTime) {
-            // Push the piston
-            decrementDisksInTube();
-            getServoController().pushPiston();
+            decrementDisksInTube(); // Decrease the count of disks in the tube
+            getServoController().pushPiston(); // Command the servo to push
             std::cout << "Piston pushed at time: " << currentTime << std::endl;
-            pushTime = currentTime;
-            pushDone = true;
-            pullDone = false;
-            stopDone = false;  // Set stopDone to false here
-        } else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 65) {
-            // Pull the piston
-            getServoController().pullPiston();
+            pushTime = currentTime; // Set the time when the piston was pushed
+            pushDone = true; // Mark that the push operation is done
+            pullDone = false; // Reset pullDone for safety
+            stopDone = false; // Reset stopDone to allow for subsequent operations
+        }
+            // Condition to pull the piston back after pushing
+        else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 65) {
+            getServoController().pullPiston(); // Command the servo to pull back
             std::cout << "Piston pulled at time: " << currentTime << std::endl;
-            pullTime = currentTime;
-            pullDone = true;
-        } else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime + 65) {
-            // Stop the piston
-            getServoController().stopPiston();
+            pullTime = currentTime; // Set the time when the piston was pulled
+            pullDone = true; // Mark that the pull operation is done
+        }
+            // Condition to stop the piston after pulling
+        else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime + 65) {
+            getServoController().stopPiston(); // Command the servo to stop
             std::cout << "Piston stopped at time: " << currentTime << std::endl;
-            stopTime = currentTime;
-            stopDone = true;
-            pushDone = false;
-            pullDone = false;
-            startConveyor = false;  // Stop the conveyor after piston operations
-            checkDiskPassed = true;  // Move to the next state to check if the disk has passed carDetectionLaser
-            diskTimeoutInProgress = true;  // Start the disk timeout check
-            diskTimeoutStartTime = currentTime;  // Record the time when the disk should be detected
-            currentState = CHECK_CAR_DETECTION;  // Move to the car detection state
+            stopTime = currentTime; // Set the time when the piston was stopped
+            stopDone = true; // Mark that the stop operation is done
+            pushDone = false; // Reset pushDone for the next cycle
+            pullDone = false; // Reset pullDone for the next cycle
+            startConveyor = false; // Stop the conveyor as the piston cycle is complete
+            checkDiskPassed = true; // Set to check if the disk has passed the next sensor
+            diskTimeoutInProgress = true; // Start the timeout monitoring
+            diskTimeoutStartTime = currentTime; // Initialize the timeout start time
+            currentState = CHECK_CAR_DETECTION; // Change state to check car detection
         }
     }
 }
 
-// Handle the car detection laser logic
+
 void SorterRobot::handleCarDetectionLaser(unsigned long currentTime) {
     bool carDetectionLaserDetected = getLaserReceiverCarDetection().isLaserDetected();
     if (!carDetectionLaserBlocked && !carDetectionLaserDetected) {
-        // Laser is blocked for the first time
-        if (diskPassedWidthFilter) {  // Only set car detection laser state if a disk has passed the width filter
+        if (diskPassedWidthFilter) {
             std::cout << "Car Detection Laser Blocked at time: " << currentTime << std::endl;
             carDetectionLaserBlocked = true;
             laserCarDetectionBlockedTime = currentTime;
         }
     } else if (carDetectionLaserBlocked && carDetectionLaserDetected) {
-        // Laser is cleared
         std::cout << "Car Detection Laser Cleared at time: " << currentTime << std::endl;
         carDetectionLaserBlocked = false;
         carDetectionLaserCleared = true;
-        diskPassedWidthFilter = false;  // Reset the flag after the disk has been detected
+        diskPassedWidthFilter = false;
 
-        // Send drive request to the car
         if (!driveRequestSent) {
             getCarController().drive(gateNumber);
             driveRequestSent = true;
             std::cout << "Drive request sent at time: " << currentTime << std::endl;
         }
 
-        currentState = RESET_AFTER_DRIVING;  // Move to reset state after driving
+        currentState = RESET_AFTER_DRIVING;
     }
 }
 
-
-// Handle the disk timeout logic
 void SorterRobot::handleDiskTimeout(unsigned long currentTime) {
     if (diskTimeoutInProgress && (currentTime - diskTimeoutStartTime >= diskTimeoutThreshold)) {
-        // Disk did not make it to the conveyor belt in time
         std::cout << "Disk did not make it to the conveyor belt at time: " << currentTime << std::endl;
         getDisplayController().displayString("Disk did not make it to the conveyor belt");
-        diskTimeoutInProgress = false;  // Reset the disk timeout state
-        checkDiskPassed = false;  // Reset disk passed state
-        carOccupied = false;  // Reset car occupied state
-        carReadyCheckInProgress = false;  // Reset readiness check state
-        driveRequestSent = false;  // Ensure no drive request is pending
+        diskTimeoutInProgress = false;
+        checkDiskPassed = false;
+        carOccupied = false;
+        carReadyCheckInProgress = false;
+        driveRequestSent = false;
         std::cout << "Disk timeout reset at time: " << currentTime << std::endl;
         if (getDisksInTube() > 0) {
-            // Start the next cycle if there are more disks in the tube
             std::cout << "Starting next cycle" << std::endl;
-            colorSensingInProgress = true;  // Prepare for next disk's color sensing
+            colorSensingInProgress = true;
             colorReadings = 0;
             currentState = COLOR_SENSING;
         } else {
@@ -309,20 +277,18 @@ void SorterRobot::handleDiskTimeout(unsigned long currentTime) {
     }
 }
 
-// Reset the state after driving
 void SorterRobot::resetAfterDriving(unsigned long currentTime) {
     if (driveRequestSent && !carDetectionLaserBlocked) {
         std::cout << "Disk passed car detection laser at time: " << currentTime << std::endl;
         driveRequestSent = false;
         carOccupied = false;
-        carDetectionLaserCleared = false;  // Reset for next detection
-        carReadyCheckInProgress = false;  // Reset readiness check
-        waitingForCarToPass = false;  // Reset waiting for car to pass
-        diskTimeoutInProgress = false;  // Ensure disk timeout is not in progress
+        carDetectionLaserCleared = false;
+        carReadyCheckInProgress = false;
+        waitingForCarToPass = false;
+        diskTimeoutInProgress = false;
         if (getDisksInTube() > 0) {
-            // Start the next cycle if there are more disks in the tube
             std::cout << "Starting next cycle" << std::endl;
-            colorSensingInProgress = true;  // Prepare for next disk's color sensing
+            colorSensingInProgress = true;
             colorReadings = 0;
             currentState = COLOR_SENSING;
         } else {
@@ -331,51 +297,20 @@ void SorterRobot::resetAfterDriving(unsigned long currentTime) {
     }
 }
 
-// Main loop to run the sorter robot
 void SorterRobot::run() {
     while (true) {
-        unsigned long currentTime = millis();  // Get the current time
+        unsigned long currentTime = millis();
 
-        // Handle different states of the sorter robot
-        switch (currentState) {
-            case IDLE:
-                handleHeightLaser(currentTime);
-                handleWidthLaser(currentTime);
-                break;
-            case HEIGHT_LASER_BLOCKED:
-                handleHeightLaser(currentTime);
-                break;
-            case WIDTH_LASER_BLOCKED:
-                handleWidthLaser(currentTime);
-                break;
-            case DISK_FALLING:
-                handleDiskSettling(currentTime);
-                break;
-            case COLOR_SENSING:
-                handleColorSensing(currentTime);
-                break;
-            case WAITING_FOR_CAR_READY:
-                handleColorSensing(currentTime);
-                break;
-            case PISTON_OPERATION:
-                handlePistonOperation(currentTime);
-                break;
-            case CHECK_CAR_DETECTION:
-                handleCarDetectionLaser(currentTime);
-                break;
-            case DRIVE_COMMAND_SENT:
-                handleCarDetectionLaser(currentTime);
-                resetAfterDriving(currentTime);
-                break;
-            case DISK_TIMEOUT:
-                handleDiskTimeout(currentTime);
-                break;
-            case RESET_AFTER_DRIVING:
-                resetAfterDriving(currentTime);
-                break;
-        }
+        handleHeightLaser(currentTime);
+        handleWidthLaser(currentTime);
+        handleDiskSettling(currentTime);
+        handleColorSensing(currentTime);
+        handlePistonOperation(currentTime);
+        handleCarDetectionLaser(currentTime);
+        handleDiskTimeout(currentTime);
+        resetAfterDriving(currentTime);
 
-        usleep(10000);  // Sleep to prevent high CPU usage
+        usleep(10000);
     }
 }
 
@@ -408,3 +343,65 @@ int SorterRobot::getGateNumberFromColor(const std::string &color) {
         return 3;
     }
 }
+
+void SorterRobot::testPistonOperation() {
+    unsigned long currentTime, lastActionTime = 0;
+    int action = 0; // Action to be taken (1 = Push, 2 = Pull, 3 = Stop)
+
+    std::cout << "Enter 1 to start piston test sequence, or 0 to exit:" << std::endl;
+    std::cin >> action;
+
+    while (action != 0) {
+        currentTime = millis(); // Get current time in milliseconds
+
+        switch (action) {
+            case 1: // Push the piston
+                if (!pushDone && !pullDone && currentTime - lastActionTime >= pistonTime) {
+                    //getServoController().pushPiston();
+                    softPwmWrite(29, 20);
+                    std::cout << "Piston pushed at time: " << currentTime << std::endl;
+                    lastActionTime = currentTime;
+                    pushDone = true;
+                    pullDone = false;
+                    stopDone = false;
+                }
+                break;
+            case 2: // Pull the piston
+                if (pushDone && !pullDone && currentTime - lastActionTime >= pistonTime + 65) {
+                    //getServoController().pullPiston();
+                    softPwmWrite(29, 10);
+                    std::cout << "Piston pulled at time: " << currentTime << std::endl;
+                    lastActionTime = currentTime;
+                    pullDone = true;
+                }
+                break;
+            case 3: // Stop the piston
+                if (pushDone && pullDone && !stopDone && currentTime - lastActionTime >= pistonTime + 65) {
+                    //getServoController().stopPiston();
+                    softPwmWrite(29, 0);
+                    std::cout << "Piston stopped at time: " << currentTime << std::endl;
+                    lastActionTime = currentTime;
+                    stopDone = true;
+                    pushDone = false;
+                    pullDone = false;
+                    // Reset the test for next trigger
+                    std::cout << "Enter 1 to restart the piston test, or 0 to exit:" << std::endl;
+                }
+                break;
+            default:
+                std::cout << "Invalid action. Enter 1 (push), 2 (pull), 3 (stop), or 0 to exit:" << std::endl;
+                break;
+        }
+
+        if (stopDone) { // Allow restart or exit after the sequence completes
+            std::cout << "Test sequence complete. Enter 1 to restart, or 0 to exit:" << std::endl;
+        }
+
+        std::cin >> action;
+    }
+
+    std::cout << "Exiting piston test." << std::endl;
+}
+
+
+

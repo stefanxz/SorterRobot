@@ -35,20 +35,33 @@ void system_init() {
 
 
 int main() {
-    int adcConfig = 0xC183;
+
+    int configValue = 0xC183; // Existing configuration for the ADS1115
+    configValue &= ~0x0E00; // Clear the gain bits
+    configValue |= 0x0200; // Set gain to ±2.048V for a balanced sensitivity
     system_init(); // Call system initialization
 
     // Define the IP address of the Arduino
-    std::string arduinoIP = "172.20.10.12";
+    std::string arduinoIP = "172.20.10.2";
 
     // Instantiate SorterRobot with appropriate pin configurations and addresses
-    SorterRobot sorterRobot(13, 15, 11, 24, 26, 23, 37, 0x48, 0x27, 19, 7, 38, 31, 32, 33, arduinoIP);
+    SorterRobot sorterRobot(13, 15, 11, 24, 26, 23, 29, 0x48, 0x27, 19, 7, 38, 31, 32, 33, arduinoIP);
 
     // Setup the robot with ADC configuration
-    sorterRobot.robotSetup(adcConfig);
+    sorterRobot.robotSetup(configValue);
+
+
+    softPwmCreate(29, 0, 100);
+    for (int i = 0; i <= 100; i++) {
+        std::cout << "pwm state: " << i << std::endl;
+        softPwmWrite(29, i);
+        usleep(1000000);
+    }
+
+    //sorterRobot.testPistonOperation();
 
     // Run the main control loop of the sorter robot
-    sorterRobot.run();
+    //sorterRobot.run();
     return 0; // Exit the program
 }
 

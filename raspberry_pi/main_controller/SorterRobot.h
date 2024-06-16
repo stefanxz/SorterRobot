@@ -15,7 +15,6 @@
 
 class SorterRobot {
 public:
-    // Enum to define the different states the robot can be in
     enum State {
         IDLE,
         HEIGHT_LASER_BLOCKED,
@@ -30,20 +29,17 @@ public:
         RESET_AFTER_DRIVING
     };
 
-    // Constructor to initialize the robot with specific pins and addresses
     SorterRobot(int motorIN1, int motorIN2, int motorEN,
                 int firstConveyorIN1, int firstConveyorIN2, int firstConveyorEN,
                 int servoPIN, int adcAddress, int displayAddress, int laserReceiverHeightPIN,
                 int laserReceiverWidthPIN, int laserReceiverCarDetectionPIN, int laserTransmitterBlackPIN,
                 int laserTransmitterWhitePIN, int laserTransmitterColorPIN, const std::string &carControllerBaseUrl);
 
-    // Destructor to stop motors
     ~SorterRobot() {
         getMotorController().stop();
         getFirstConveyor().stop();
     }
 
-    // Accessor methods for various controllers
     MotorController &getMotorController();
     MotorController &getFirstConveyor();
     ServoController &getServoController();
@@ -57,15 +53,12 @@ public:
     LaserTransmitter &getLaserTransmitterColor();
     CarController &getCarController();
 
-    // Methods to increment and decrement the number of disks in the tube
     void incrementDisksInTube();
     void decrementDisksInTube();
     int getDisksInTube() const;
 
-    // Method to setup the robot with an ADC configuration
     void robotSetup(int adcConfig);
 
-    // Handlers for various sensors and actions
     void handleHeightLaser(unsigned long currentTime);
     void handleWidthLaser(unsigned long currentTime);
     void handleDiskSettling(unsigned long currentTime);
@@ -75,13 +68,11 @@ public:
     void handleDiskTimeout(unsigned long currentTime);
     void resetAfterDriving(unsigned long currentTime);
     void handleGateLasers(int gateNumber);
-	int getGateNumberFromColor(const std::string &color);
+    void testPistonOperation();
 
-    // Main method to run the robot
     void run();
 
 private:
-    // Controllers for various components of the robot
     MotorController firstConveyor;
     MotorController motorController;
     ServoController servoController;
@@ -95,10 +86,8 @@ private:
     LaserTransmitter laserTransmitterColor;
     CarController carController;
 
-    // Current state of the robot
     State currentState = IDLE;
 
-    // Pins and addresses for the components
     int firstConveyorIN1{};
     int firstConveyorIN2{};
     int firstConveyorEN{};
@@ -116,7 +105,6 @@ private:
     int laserTransmitterColorPIN{};
     int disksInTube{};
 
-    // Variables to keep track of times for various actions
     unsigned long laserWidthBlockedTime = 0;
     unsigned long laserHeightBlockedTime = 0;
     unsigned long laserCarDetectionBlockedTime = 0;
@@ -127,9 +115,8 @@ private:
     unsigned long stopTime = 0;
     unsigned long diskTimeoutStartTime = 0;
     unsigned long carReadyCheckTime = 0;
-    unsigned long carReadyCheckStartTime = 0; // Track the start time of the car readiness check
+    unsigned long carReadyCheckStartTime = 0;
 
-    // Flags to indicate various conditions
     bool laserWidthBlocked = false;
     bool laserHeightBlocked = false;
     bool carDetectionLaserBlocked = false;
@@ -153,22 +140,21 @@ private:
     bool diskTimeoutInProgress = false;
     bool diskPassedWidthFilter = false;
 
-    // Variables to track readings and gate number
     int colorReadings = 0;
     int gateNumber = 0;
 
-    // Thresholds for various actions
     const unsigned long stuckThreshold = 3000;
     const unsigned long carDetectionThreshold = 5000;
     const unsigned long colorDelayTime = 500;
-    const unsigned long diskFallTime = 1000;
+    const unsigned long diskFallTime = 2000;
     const unsigned long pistonTime = 1500;
     const unsigned long diskTimeoutThreshold = 2000;
     const unsigned long carReadyCheckInterval = 500;
 
-    //Flags for displaying stuck messages
     bool stuckMessageDisplayedAtHeight = false;
     bool stuckMessageDisplayedAtWidth = false;
+
+    static int getGateNumberFromColor(const std::string &color);
 };
 
 #endif //SORTERROBOT_SORTERROBOT_H
