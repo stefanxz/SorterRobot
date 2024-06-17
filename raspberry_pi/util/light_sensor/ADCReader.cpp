@@ -38,11 +38,11 @@ int ADCReader::readADCChannel(int channelConfig)
 
 std::string ADCReader::detectColor(int value)
 {
-    if (value <= 26)
+    if (value <= 13)
     {
         return "black";
     }
-    else if (value >= 52)
+    else if (value >= 23)
     {
         return "white";
     }

@@ -149,7 +149,7 @@ private:
     const unsigned long carDetectionThreshold = 5000;
     const unsigned long colorDelayTime = 500;
     const unsigned long diskFallTime = 2000;
-    const unsigned long pistonTime = 1500;
+    const unsigned long pistonTime = 1900;
     const unsigned long diskTimeoutThreshold = 5000;
     const unsigned long carReadyCheckInterval = 500;
 

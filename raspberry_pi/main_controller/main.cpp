@@ -50,19 +50,19 @@ int main() {
     // Setup the robot with ADC configuration
     sorterRobot.robotSetup(configValue);
 
- /**
-    softPwmCreate(29, 0, 100);
-    for (int i = 0; i <= 100; i++) {
-        std::cout << "pwm state: " << i << std::endl;
-        softPwmWrite(29, i);
-        usleep(1000000);
-    }
-    **/
+    /**
+       softPwmCreate(29, 0, 100);
+       for (int i = 0; i <= 100; i++) {
+           std::cout << "pwm state: " << i << std::endl;
+           softPwmWrite(29, i);
+           usleep(1000000);
+       }
+       **/
 
-    sorterRobot.autoTestPistonOperation();
+    //sorterRobot.autoTestPistonOperation();
 
     // Run the main control loop of the sorter robot
-    // sorterRobot.run();
+    sorterRobot.run();
     return 0; // Exit the program
 }
 

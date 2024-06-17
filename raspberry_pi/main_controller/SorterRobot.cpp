@@ -206,7 +206,7 @@ void SorterRobot::handlePistonOperation(unsigned long currentTime) {
             expectingDiskAtCarDetection = true; // Flag that the piston has pushed a disk
         }
             // Pull the piston back
-        else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 150) {
+        else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 157) {
             getServoController().pullPiston();
             std::cout << "Piston pulled at time: " << currentTime << std::endl;
             pullTime = currentTime;
@@ -395,39 +395,83 @@ void SorterRobot::testPistonOperation() {
 }
 
 void SorterRobot::autoTestPistonOperation() {
-    unsigned long currentTime = millis();
-    unsigned long startTestTime = currentTime;
-    unsigned long pushDuration = pistonTime;      // Duration to push the piston
-    unsigned long pullDelay = pistonTime + 150;   // Delay after push to start pull
-    unsigned long stopDelay = pistonTime + 25;         // Delay after pull to stop
+    const int numberOfCycles = 30;  // Number of times to repeat the test sequence
 
-    startConveyor = true;  // Ensure conveyor is started for the test
+    for (int cycle = 0; cycle < numberOfCycles; ++cycle) {
+        unsigned long currentTime = millis();
+        unsigned long startTestTime = currentTime;
 
-    // Simulate the push operation
-    while (millis() - startTestTime < pushDuration) {
-        handlePistonOperation(millis());
+        unsigned long pushDuration = 1900;  // Duration to push the piston
+        unsigned long pullDuration = 2057;  // Duration to pull the piston longer than push
+        unsigned long stopDelay = 1000;     // Duration to wait before stopping after pull
+
+        startConveyor = true;  // Ensure conveyor is started for the test
+        bool inPushPhase = true;
+        bool inPullPhase = false;
+        bool inStopPhase = false;
+
+        pushDone = false;
+        pullDone = false;
+        stopDone = false;
+
+        std::cout << "Starting test cycle " << cycle + 1 << std::endl;
+
+        while (currentTime - startTestTime < (pushDuration + pullDuration + stopDelay)) {
+            currentTime = millis();
+
+            // Handle the push operation
+            if (inPushPhase && !pushDone && currentTime - startTestTime < pushDuration) {
+                getServoController().pushPiston();
+                std::cout << "Piston pushed at time: " << currentTime << std::endl;
+                pushDone = true;
+                pullDone = false;
+                stopDone = false;
+            }
+
+            // Transition to pull after push duration
+            if (pushDone && !pullDone && inPushPhase && currentTime - startTestTime >= pushDuration) {
+                inPushPhase = false;
+                inPullPhase = true;
+                startTestTime = currentTime;  // Reset the timer for pull phase
+            }
+
+            // Handle the pull operation
+            if (inPullPhase && !pullDone && currentTime - startTestTime < pullDuration) {
+                getServoController().pullPiston();
+                std::cout << "Piston pulled at time: " << currentTime << std::endl;
+                pullDone = true;
+            }
+
+            // Transition to stop after pull duration
+            if (pullDone && !stopDone && inPullPhase && currentTime - startTestTime >= pullDuration) {
+                inPullPhase = false;
+                inStopPhase = true;
+                startTestTime = currentTime;  // Reset the timer for stop phase
+            }
+
+            // Handle the stop operation
+            if (inStopPhase && !stopDone && currentTime - startTestTime < stopDelay) {
+                getServoController().stopPiston();
+                std::cout << "Piston stopped at time: " << currentTime << std::endl;
+                stopDone = true;
+                pushDone = false;
+                pullDone = false;
+                startConveyor = false;
+            }
+
+            // Finish all operations
+            if (stopDone && inStopPhase && currentTime - startTestTime >= stopDelay) {
+                break;  // Exit the loop as this cycle is complete
+            }
+        }
     }
 
-    // Simulate the pull operation
-    startTestTime = millis(); // Reset the start time for the pull operation
-    while (millis() - startTestTime < pullDelay) {
-        handlePistonOperation(millis());
-    }
-
-    // Simulate the stop operation
-    startTestTime = millis(); // Reset the start time for the stop operation
-    while (millis() - startTestTime < stopDelay) {
-        handlePistonOperation(millis());
-    }
-
-    // After completing the test, ensure all flags and controls are reset
-    pushDone = false;
-    pullDone = false;
-    stopDone = false;
-    startConveyor = false;
-    currentState = IDLE;  // Set robot back to idle state
-    std::cout << "Auto test of piston operation completed." << std::endl;
+    currentState = IDLE;  // Set robot back to idle state after all cycles
+    std::cout << "Auto test of piston operation completed for " << numberOfCycles << " cycles." << std::endl;
 }
+
+
+
 
 
 
