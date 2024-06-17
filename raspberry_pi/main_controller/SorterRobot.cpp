@@ -195,38 +195,35 @@ void SorterRobot::handleColorSensing(unsigned long currentTime) {
 }
 
 void SorterRobot::handlePistonOperation(unsigned long currentTime) {
-    // Check if the conveyor has started and the piston operation is due
     if (startConveyor) {
-        // Condition to push the piston
+        // Push the piston
         if (!pushDone && !pullDone && currentTime - stopTime >= pistonTime) {
-            decrementDisksInTube(); // Decrease the count of disks in the tube
-            getServoController().pushPiston(); // Command the servo to push
+            decrementDisksInTube();
+            getServoController().pushPiston();
             std::cout << "Piston pushed at time: " << currentTime << std::endl;
-            pushTime = currentTime; // Set the time when the piston was pushed
-            pushDone = true; // Mark that the push operation is done
-            pullDone = false; // Reset pullDone for safety
-            stopDone = false; // Reset stopDone to allow for subsequent operations
+            pushTime = currentTime;
+            pushDone = true;
+            expectingDiskAtCarDetection = true; // Flag that the piston has pushed a disk
         }
-            // Condition to pull the piston back after pushing
-        else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 65) {
-            getServoController().pullPiston(); // Command the servo to pull back
+            // Pull the piston back
+        else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 150) {
+            getServoController().pullPiston();
             std::cout << "Piston pulled at time: " << currentTime << std::endl;
-            pullTime = currentTime; // Set the time when the piston was pulled
-            pullDone = true; // Mark that the pull operation is done
+            pullTime = currentTime;
+            pullDone = true;
         }
-            // Condition to stop the piston after pulling
-        else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime + 65) {
-            getServoController().stopPiston(); // Command the servo to stop
+            // Stop the piston after pulling
+        else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime ) {
+            getServoController().stopPiston();
             std::cout << "Piston stopped at time: " << currentTime << std::endl;
-            stopTime = currentTime; // Set the time when the piston was stopped
-            stopDone = true; // Mark that the stop operation is done
-            pushDone = false; // Reset pushDone for the next cycle
-            pullDone = false; // Reset pullDone for the next cycle
-            startConveyor = false; // Stop the conveyor as the piston cycle is complete
-            checkDiskPassed = true; // Set to check if the disk has passed the next sensor
-            diskTimeoutInProgress = true; // Start the timeout monitoring
-            diskTimeoutStartTime = currentTime; // Initialize the timeout start time
-            currentState = CHECK_CAR_DETECTION; // Change state to check car detection
+            stopTime = currentTime;
+            stopDone = true;
+            pushDone = false;
+            pullDone = false;
+            startConveyor = false;
+            diskTimeoutInProgress = true; // Monitor for disk timeout starting now
+            diskTimeoutStartTime = currentTime; // Set the start time for timeout monitoring
+            currentState = CHECK_CAR_DETECTION; // Move to the next state for car detection
         }
     }
 }
@@ -234,24 +231,21 @@ void SorterRobot::handlePistonOperation(unsigned long currentTime) {
 
 void SorterRobot::handleCarDetectionLaser(unsigned long currentTime) {
     bool carDetectionLaserDetected = getLaserReceiverCarDetection().isLaserDetected();
-    if (!carDetectionLaserBlocked && !carDetectionLaserDetected) {
-        if (diskPassedWidthFilter) {
-            std::cout << "Car Detection Laser Blocked at time: " << currentTime << std::endl;
-            carDetectionLaserBlocked = true;
-            laserCarDetectionBlockedTime = currentTime;
-        }
+    if (!carDetectionLaserBlocked && !carDetectionLaserDetected && expectingDiskAtCarDetection) {
+        std::cout << "Car Detection Laser Blocked at time: " << currentTime << std::endl;
+        carDetectionLaserBlocked = true;
+        laserCarDetectionBlockedTime = currentTime;
     } else if (carDetectionLaserBlocked && carDetectionLaserDetected) {
         std::cout << "Car Detection Laser Cleared at time: " << currentTime << std::endl;
         carDetectionLaserBlocked = false;
-        carDetectionLaserCleared = true;
-        diskPassedWidthFilter = false;
-
-        if (!driveRequestSent) {
-            getCarController().drive(gateNumber);
-            driveRequestSent = true;
-            std::cout << "Drive request sent at time: " << currentTime << std::endl;
+        if (expectingDiskAtCarDetection) {
+            if (!driveRequestSent) {
+                getCarController().drive(gateNumber);
+                driveRequestSent = true;
+                std::cout << "Drive request sent at time: " << currentTime << std::endl;
+            }
+            expectingDiskAtCarDetection = false; // Reset the flag
         }
-
         currentState = RESET_AFTER_DRIVING;
     }
 }
@@ -261,6 +255,7 @@ void SorterRobot::handleDiskTimeout(unsigned long currentTime) {
         std::cout << "Disk did not make it to the conveyor belt at time: " << currentTime << std::endl;
         getDisplayController().displayString("Disk did not make it to the conveyor belt");
         diskTimeoutInProgress = false;
+        expectingDiskAtCarDetection = false; // Reset the flag on timeout
         checkDiskPassed = false;
         carOccupied = false;
         carReadyCheckInProgress = false;
@@ -344,63 +339,94 @@ int SorterRobot::getGateNumberFromColor(const std::string &color) {
     }
 }
 
+
 void SorterRobot::testPistonOperation() {
-    unsigned long currentTime, lastActionTime = 0;
-    int action = 0; // Action to be taken (1 = Push, 2 = Pull, 3 = Stop)
+    unsigned long currentTime = 0;
+    int action = 0; // Action to be taken (1 = Push, 2 = Pull, 3 = Stop, 0 = Exit)
 
-    std::cout << "Enter 1 to start piston test sequence, or 0 to exit:" << std::endl;
-    std::cin >> action;
+    std::cout << "Piston Operation Test\n";
+    std::cout << "Enter 1 to push, 2 to pull, 3 to stop, or 0 to exit:\n";
 
-    while (action != 0) {
-        currentTime = millis(); // Get current time in milliseconds
+    while (std::cin >> action && action != 0) {
+        currentTime = millis(); // Get current time in milliseconds, simulate or use actual function
 
         switch (action) {
             case 1: // Push the piston
-                if (!pushDone && !pullDone && currentTime - lastActionTime >= pistonTime) {
-                    //getServoController().pushPiston();
-                    softPwmWrite(29, 20);
+                if (!pushDone) {
+                    getServoController().pushPiston(); // Simulate push
                     std::cout << "Piston pushed at time: " << currentTime << std::endl;
-                    lastActionTime = currentTime;
+                    pushTime = currentTime; // Record push time
                     pushDone = true;
                     pullDone = false;
                     stopDone = false;
+                } else {
+                    std::cout << "Piston already pushed, reset to push again.\n";
                 }
                 break;
             case 2: // Pull the piston
-                if (pushDone && !pullDone && currentTime - lastActionTime >= pistonTime + 65) {
-                    //getServoController().pullPiston();
-                    softPwmWrite(29, 10);
+                if (pushDone && !pullDone) {
+                    getServoController().pullPiston(); // Simulate pull
                     std::cout << "Piston pulled at time: " << currentTime << std::endl;
-                    lastActionTime = currentTime;
+                    pullTime = currentTime; // Record pull time
                     pullDone = true;
+                } else {
+                    std::cout << "Push piston first or piston already pulled.\n";
                 }
                 break;
             case 3: // Stop the piston
-                if (pushDone && pullDone && !stopDone && currentTime - lastActionTime >= pistonTime + 65) {
-                    //getServoController().stopPiston();
-                    softPwmWrite(29, 0);
+                if (pushDone && pullDone && !stopDone) {
+                    getServoController().stopPiston(); // Simulate stop
                     std::cout << "Piston stopped at time: " << currentTime << std::endl;
-                    lastActionTime = currentTime;
+                    stopTime = currentTime; // Record stop time
                     stopDone = true;
                     pushDone = false;
                     pullDone = false;
-                    // Reset the test for next trigger
-                    std::cout << "Enter 1 to restart the piston test, or 0 to exit:" << std::endl;
+                } else {
+                    std::cout << "Pull piston first or piston already stopped.\n";
                 }
                 break;
             default:
-                std::cout << "Invalid action. Enter 1 (push), 2 (pull), 3 (stop), or 0 to exit:" << std::endl;
+                std::cout << "Invalid action. Enter 1 (push), 2 (pull), 3 (stop), or 0 to exit:\n";
                 break;
         }
-
-        if (stopDone) { // Allow restart or exit after the sequence completes
-            std::cout << "Test sequence complete. Enter 1 to restart, or 0 to exit:" << std::endl;
-        }
-
-        std::cin >> action;
     }
 
-    std::cout << "Exiting piston test." << std::endl;
+    std::cout << "Exiting piston test.\n";
+}
+
+void SorterRobot::autoTestPistonOperation() {
+    unsigned long currentTime = millis();
+    unsigned long startTestTime = currentTime;
+    unsigned long pushDuration = pistonTime;      // Duration to push the piston
+    unsigned long pullDelay = pistonTime + 150;   // Delay after push to start pull
+    unsigned long stopDelay = pistonTime + 25;         // Delay after pull to stop
+
+    startConveyor = true;  // Ensure conveyor is started for the test
+
+    // Simulate the push operation
+    while (millis() - startTestTime < pushDuration) {
+        handlePistonOperation(millis());
+    }
+
+    // Simulate the pull operation
+    startTestTime = millis(); // Reset the start time for the pull operation
+    while (millis() - startTestTime < pullDelay) {
+        handlePistonOperation(millis());
+    }
+
+    // Simulate the stop operation
+    startTestTime = millis(); // Reset the start time for the stop operation
+    while (millis() - startTestTime < stopDelay) {
+        handlePistonOperation(millis());
+    }
+
+    // After completing the test, ensure all flags and controls are reset
+    pushDone = false;
+    pullDone = false;
+    stopDone = false;
+    startConveyor = false;
+    currentState = IDLE;  // Set robot back to idle state
+    std::cout << "Auto test of piston operation completed." << std::endl;
 }
 
 

@@ -40,7 +40,7 @@ void DisplayController::openI2CBus(const char *filename, int i2cAddress) {
 
 // Clear the display
 void DisplayController::displayClear() const {
-    std::cout << "Cleared display" << std::endl;
+    //std::cout << "Cleared display" << std::endl;
     sendCmd(0x01);  // Clear display
     delay(2);       // Delay for clearing to complete
 }

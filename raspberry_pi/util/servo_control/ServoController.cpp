@@ -5,7 +5,7 @@
 #define PAUSE 0     // PWM value for stopping
 
 ServoController::ServoController(int pin) : pin(pin) {
-    softPwmCreate(this->pin, 0, 100);  // Set up PWM on the specified pin
+    softPwmCreate(this->pin, 0, 200);  // Set up PWM on the specified pin
     stopPiston();  // Ensure the piston is stopped initially
 }
 

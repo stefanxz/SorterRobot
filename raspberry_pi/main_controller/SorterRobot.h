@@ -2,6 +2,7 @@
 #define SORTERROBOT_SORTERROBOT_H
 
 #include <iostream>
+#include <chrono>
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <wiringPiI2C.h>
@@ -69,7 +70,7 @@ public:
     void resetAfterDriving(unsigned long currentTime);
     void handleGateLasers(int gateNumber);
     void testPistonOperation();
-
+    void autoTestPistonOperation();
     void run();
 
 private:
@@ -131,7 +132,7 @@ private:
     bool conveyorRunning = false;
     bool pushDone = false;
     bool pullDone = false;
-    bool stopDone = true;
+    bool stopDone = false;
     bool carOccupied = false;
     bool carReadyCheckInProgress = false;
     bool driveRequestSent = false;
@@ -139,6 +140,7 @@ private:
     bool checkDiskPassed = false;
     bool diskTimeoutInProgress = false;
     bool diskPassedWidthFilter = false;
+    bool expectingDiskAtCarDetection = false;
 
     int colorReadings = 0;
     int gateNumber = 0;
@@ -148,7 +150,7 @@ private:
     const unsigned long colorDelayTime = 500;
     const unsigned long diskFallTime = 2000;
     const unsigned long pistonTime = 1500;
-    const unsigned long diskTimeoutThreshold = 2000;
+    const unsigned long diskTimeoutThreshold = 5000;
     const unsigned long carReadyCheckInterval = 500;
 
     bool stuckMessageDisplayedAtHeight = false;
