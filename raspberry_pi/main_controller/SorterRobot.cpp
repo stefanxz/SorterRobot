@@ -160,7 +160,7 @@ void SorterRobot::handleDiskSettling(unsigned long currentTime) {
 }
 
 void SorterRobot::handleColorSensing(unsigned long currentTime) {
-    if (colorSensingInProgress) {
+    if (colorSensingInProgress && !startConveyor) { // Check if the piston operation has completed
         if (colorReadings < 1) {
             if (!colorDelayInProgress) {
                 std::cout << "Performing color reading " << (colorReadings + 1) << std::endl;
@@ -195,25 +195,30 @@ void SorterRobot::handleColorSensing(unsigned long currentTime) {
 }
 
 void SorterRobot::handlePistonOperation(unsigned long currentTime) {
+
+    unsigned long pushDuration = 1900;  // Duration to push the piston
+    unsigned long pullDuration = 1957;  // Duration to pull the piston longer than push
     if (startConveyor) {
         // Push the piston
-        if (!pushDone && !pullDone && currentTime - stopTime >= pistonTime) {
+        if (!pushDone && !pullDone && currentTime - stopTime >= pushDuration) {
             decrementDisksInTube();
             getServoController().pushPiston();
             std::cout << "Piston pushed at time: " << currentTime << std::endl;
             pushTime = currentTime;
             pushDone = true;
             expectingDiskAtCarDetection = true; // Flag that the piston has pushed a disk
+            diskTimeoutInProgress = true; // Start the disk timeout monitoring
+            diskTimeoutStartTime = currentTime; // Record the start time of the disk timeout
         }
             // Pull the piston back
-        else if (pushDone && !pullDone && currentTime - pushTime >= pistonTime + 157) {
+        else if (pushDone && !pullDone && currentTime - pushTime >= pullDuration) {
             getServoController().pullPiston();
             std::cout << "Piston pulled at time: " << currentTime << std::endl;
             pullTime = currentTime;
             pullDone = true;
         }
             // Stop the piston after pulling
-        else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime ) {
+        else if (pushDone && pullDone && !stopDone && currentTime - pullTime >= pistonTime) {
             getServoController().stopPiston();
             std::cout << "Piston stopped at time: " << currentTime << std::endl;
             stopTime = currentTime;
@@ -221,16 +226,19 @@ void SorterRobot::handlePistonOperation(unsigned long currentTime) {
             pushDone = false;
             pullDone = false;
             startConveyor = false;
-            diskTimeoutInProgress = true; // Monitor for disk timeout starting now
-            diskTimeoutStartTime = currentTime; // Set the start time for timeout monitoring
-            currentState = CHECK_CAR_DETECTION; // Move to the next state for car detection
         }
+    }
+    // Reset the stopDone flag after each operation cycle
+    if (stopDone && !startConveyor) {
+        stopDone = false;
     }
 }
 
 
 void SorterRobot::handleCarDetectionLaser(unsigned long currentTime) {
     bool carDetectionLaserDetected = getLaserReceiverCarDetection().isLaserDetected();
+
+    // Check if a disk is expected and the laser transitions state
     if (!carDetectionLaserBlocked && !carDetectionLaserDetected && expectingDiskAtCarDetection) {
         std::cout << "Car Detection Laser Blocked at time: " << currentTime << std::endl;
         carDetectionLaserBlocked = true;
@@ -244,33 +252,42 @@ void SorterRobot::handleCarDetectionLaser(unsigned long currentTime) {
                 driveRequestSent = true;
                 std::cout << "Drive request sent at time: " << currentTime << std::endl;
             }
-            expectingDiskAtCarDetection = false; // Reset the flag
+            expectingDiskAtCarDetection = false; // Reset this as we're concluding the cycle with a timeout error
+            diskTimeoutInProgress = false; // Reset the disk timeout monitoring as the disk has made it past the laser
         }
         currentState = RESET_AFTER_DRIVING;
     }
 }
 
 void SorterRobot::handleDiskTimeout(unsigned long currentTime) {
+    // Check if the disk timeout monitoring is active
     if (diskTimeoutInProgress && (currentTime - diskTimeoutStartTime >= diskTimeoutThreshold)) {
         std::cout << "Disk did not make it to the conveyor belt at time: " << currentTime << std::endl;
         getDisplayController().displayString("Disk did not make it to the conveyor belt");
+
+        // Reset related flags and states to handle this error scenario
         diskTimeoutInProgress = false;
-        expectingDiskAtCarDetection = false; // Reset the flag on timeout
+        expectingDiskAtCarDetection = false; // Reset this as we're concluding the cycle with a timeout error
         checkDiskPassed = false;
         carOccupied = false;
         carReadyCheckInProgress = false;
         driveRequestSent = false;
+
         std::cout << "Disk timeout reset at time: " << currentTime << std::endl;
+
+        // Decide on next steps based on the presence of more disks in the tube
         if (getDisksInTube() > 0) {
             std::cout << "Starting next cycle" << std::endl;
             colorSensingInProgress = true;
             colorReadings = 0;
+            startConveyor = true; // Start the next operation cycle
             currentState = COLOR_SENSING;
         } else {
             currentState = IDLE;
         }
     }
 }
+
 
 void SorterRobot::resetAfterDriving(unsigned long currentTime) {
     if (driveRequestSent && !carDetectionLaserBlocked) {
