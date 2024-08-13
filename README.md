@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This repository hosts the collaborative university project for the CBL Embedded Systems course. It involves a sorting robot and an RC car designed to simulate an airport baggage handling system, utilizing a Raspberry Pi and Arduino Uno to handle respective tasks.
+This repository involves a sorting robot and an RC car designed to simulate an airport baggage handling system, utilizing a Raspberry Pi and Arduino Uno to handle respective tasks.
 
 ## Team Members
 
