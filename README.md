@@ -1,7 +1,5 @@
 # Sorting Robot & RC Car Project
 
-## Course: CBL Embedded Systems
-
 ## Introduction
 
 This repository involves a sorting robot and an RC car designed to simulate an airport baggage handling system, utilizing a Raspberry Pi and Arduino Uno to handle respective tasks.
